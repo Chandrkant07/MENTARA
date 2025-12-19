@@ -16,8 +16,9 @@ services:
           name: mentara-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        # Allows any <service>.onrender.com hostname.
-        value: ".onrender.com"
+        # Django expects exact hostnames (comma-separated). Update this after Render creates your service.
+        # Example: "mentara-backend.onrender.com"
+        value: "YOUR_RENDER_SERVICE.onrender.com"
 
       # Set these after you know your Netlify site URL.
       - key: CSRF_TRUSTED_ORIGINS
