@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if create %}Add Question to "{{ quiz.title }}"{% else %}Edit Question{% endif %}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">{% if create %}Add Question{% else %}Save{% endif %}</button>
+  <a href="{% url 'quizzes:manage_quiz' quiz.id %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

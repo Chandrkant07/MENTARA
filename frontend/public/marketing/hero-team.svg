@@ -1,0 +1,36 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(820 420) rotate(90) scale(560 980)">
+      <stop stop-color="#6366F1" stop-opacity="0.50"/>
+      <stop offset="0.55" stop-color="#06B6D4" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#0A0B0F"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="#0A0B0F"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <g opacity="0.9">
+    <rect x="320" y="220" width="960" height="500" rx="34" fill="#111218" fill-opacity="0.55" stroke="#FFFFFF" stroke-opacity="0.12"/>
+
+    <g opacity="0.85" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="2">
+      <circle cx="560" cy="360" r="22" fill="#FFFFFF" fill-opacity="0.06"/>
+      <circle cx="760" cy="300" r="26" fill="#FFFFFF" fill-opacity="0.06"/>
+      <circle cx="980" cy="360" r="22" fill="#FFFFFF" fill-opacity="0.06"/>
+      <circle cx="700" cy="520" r="24" fill="#FFFFFF" fill-opacity="0.06"/>
+      <circle cx="900" cy="520" r="24" fill="#FFFFFF" fill-opacity="0.06"/>
+
+      <path d="M560 360 L760 300"/>
+      <path d="M760 300 L980 360"/>
+      <path d="M560 360 L700 520"/>
+      <path d="M980 360 L900 520"/>
+      <path d="M700 520 L900 520"/>
+    </g>
+
+    <g opacity="0.95">
+      <rect x="480" y="610" width="640" height="70" rx="20" fill="#1E1F29" fill-opacity="0.72" stroke="#FFFFFF" stroke-opacity="0.10"/>
+      <rect x="520" y="634" width="160" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.18"/>
+      <rect x="720" y="634" width="240" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.12"/>
+      <rect x="980" y="634" width="90" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.12"/>
+    </g>
+  </g>
+</svg>

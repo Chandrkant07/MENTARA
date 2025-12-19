@@ -1,0 +1,270 @@
+/* =======================================================
+   🌐 UNIVERSAL DASHBOARD STYLING
+   ======================================================= */
+
+body {
+  background-color: #0e0e0e;
+  font-family: 'Poppins', sans-serif;
+  color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard-container {
+  max-width: 1150px;
+  margin: 40px auto;
+  padding: 35px 45px;
+  background: linear-gradient(145deg, #171717, #111);
+  border-radius: 18px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+.dashboard-container h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 35px;
+  text-align: center;
+  color: #00bcd4;
+}
+
+/* =======================================================
+   📊 SECTION CARD
+   ======================================================= */
+
+.section-card {
+  background: #1b1b1b;
+  border-radius: 14px;
+  padding: 25px 30px;
+  margin-top: 30px;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2e2e2e;
+}
+
+.section-card h3 {
+  color: #00bcd4;
+  font-size: 1.2rem;
+  margin-bottom: 18px;
+  font-weight: 600;
+}
+
+/* =======================================================
+   📊 STAT CARDS
+   ======================================================= */
+
+.stats-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  flex: 1;
+  min-width: 230px;
+  background: #1e1e1e;
+  border: 1px solid #2e2e2e;
+  padding: 22px 25px;
+  border-radius: 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  border-color: #00bcd4;
+  box-shadow: 0 0 20px rgba(0, 188, 212, 0.4);
+}
+
+.stat-card h5 {
+  color: #b3b3b3;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card p {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #00bcd4;
+  margin: 0;
+}
+
+/* =======================================================
+   📋 TABLES
+   ======================================================= */
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #333;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.dashboard-table th {
+  background: #242424;
+  font-weight: 600;
+  color: #00bcd4;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashboard-table tr:hover {
+  background: #222;
+}
+
+.dashboard-table td {
+  color: #ccc;
+}
+
+/* =======================================================
+   🕓 PENDING LIST
+   ======================================================= */
+
+.pending-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.pending-list li {
+  background: #1e1e1e;
+  padding: 14px 16px;
+  margin: 10px 0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 4px solid #00bcd4;
+  transition: all 0.25s ease;
+}
+
+.pending-list li:hover {
+  background: #252525;
+  border-left-color: #03a9f4;
+}
+
+.btn-small {
+  color: #ffcc00;
+  text-decoration: none;
+  border: 1px solid #ffcc00;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  transition: all 0.25s ease;
+}
+
+.btn-small:hover {
+  background: #ffcc00;
+  color: #000;
+}
+
+/* =======================================================
+   🏷️ STATUS BADGES
+   ======================================================= */
+
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #fff;
+  display: inline-block;
+}
+
+.status-badge.done {
+  background: #4caf50;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+}
+
+.status-badge.pending {
+  background: #e53935;
+  box-shadow: 0 0 6px rgba(229, 57, 53, 0.6);
+}
+
+.status-badge.auto {
+  background: #ff9800;
+  box-shadow: 0 0 6px rgba(255, 152, 0, 0.6);
+}
+
+/* =======================================================
+   🧑‍🏫 TEACHER ACTION BUTTONS
+   ======================================================= */
+
+.teacher-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  justify-content: flex-end;
+}
+
+.teacher-actions .btn {
+  padding: 10px 20px;
+  font-weight: 500;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-success {
+  background: #00bcd4;
+  color: #fff;
+  border: none;
+}
+
+.btn-success:hover {
+  background: #03a9f4;
+}
+
+.btn-outline-info {
+  border: 1px solid #00bcd4;
+  color: #00bcd4;
+  background: transparent;
+}
+
+.btn-outline-info:hover {
+  background: #00bcd4;
+  color: #fff;
+}
+
+/* =======================================================
+   📱 RESPONSIVE DESIGN
+   ======================================================= */
+
+@media (max-width: 900px) {
+  .stats-cards {
+    flex-direction: column;
+  }
+
+  .dashboard-container {
+    padding: 20px;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    font-size: 0.85rem;
+  }
+
+  .teacher-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .teacher-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

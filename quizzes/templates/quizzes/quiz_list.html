@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Available Quizzes</h2>
+
+{% if request.user.is_staff %}
+  <div style="margin-bottom: 12px;">
+    <a href="{% url 'quizzes:upload_quiz_excel' %}" class="btn btn-success">Upload Quiz Excel</a>
+  </div>
+{% endif %}
+
+<div class="quiz-grid">
+  {% for quiz in quizzes %}
+    {% if quiz.is_active %}
+      <div class="card" style="margin-bottom: 12px; padding:12px;">
+        <h4>{{ quiz.title }}</h4>
+        <p>Subject: {{ quiz.subject }} | Difficulty: {{ quiz.difficulty }}</p>
+        <p>{{ quiz.question_count }} Questions</p>
+
+        <a href="{% url 'quizzes:start_quiz' quiz.id %}" class="btn btn-primary">Start Quiz</a>
+
+        {% if request.user.is_staff %}
+          <a href="{% url 'quizzes:manage_quiz' quiz.id %}" class="btn btn-outline-secondary">Manage</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% empty %}
+    <p>No quizzes available.</p>
+  {% endfor %}
+</div>
+{% endblock %}

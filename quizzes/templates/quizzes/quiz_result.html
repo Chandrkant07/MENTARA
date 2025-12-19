@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Result — {{ attempt.quiz.title }}</h2>
+<p>Score: {{ attempt.score }} / {{ attempt.max_score }}</p>
+
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+  <thead>
+    <tr style="text-align:left; border-bottom:1px solid #ddd;">
+      <th>#</th>
+      <th>Question</th>
+      <th>Your Answer</th>
+      <th>Correct</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ans in answers %}
+      <tr style="border-bottom:1px solid #f0f0f0;">
+        <td>{{ forloop.counter }}</td>
+        <td>{{ ans.question.text }}</td>
+        <td>{{ ans.selected_option|default:"-" }}</td>  {# use selected_option #}
+        <td>{{ ans.question.correct_answer }}</td>
+        <td>{{ ans.question.explanation }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div style="margin-top:16px;">
+  <a href="{% url 'quizzes:quiz_list' %}" class="btn btn-secondary">Back to Quizzes</a>
+</div>
+{% endblock %}

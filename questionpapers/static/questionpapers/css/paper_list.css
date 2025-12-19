@@ -1,0 +1,279 @@
+:root {
+  --base-bg: #0d0d0d;
+  --glass-bg: rgba(30, 30, 30, 0.85);
+  --white: #ffffff;
+  --gray: #bcbcbc;
+  --text-muted: #9ca3af;
+  --accent: #00b7ff;
+  --accent-hover: #2ac8ff;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --transition: 0.25s ease;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+body {
+  background-color: var(--base-bg);
+  color: var(--white);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+.layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------- Sidebar ---------------- */
+.sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border-light);
+  padding: 25px 20px;
+  overflow-y: auto;
+  z-index: 900;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sidebar-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.upload-btn {
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 6px 10px;
+  text-decoration: none;
+  color: var(--white);
+  transition: all var(--transition);
+}
+
+.upload-btn:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+/* ---------------- Subject List ---------------- */
+.subject-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.subject-item {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  text-align: center;
+  padding: 10px 12px;
+  color: var(--gray);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.subject-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+.subject-item.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--white);
+  border-left: 3px solid var(--accent);
+}
+
+/* ---------------- Sidebar Filters ---------------- */
+.sidebar-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(40, 40, 40, 0.85);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 15px;
+  animation: fadeIn 0.3s ease;
+}
+
+.sidebar-filters.hidden {
+  display: none;
+}
+
+.sidebar-filters h4 {
+  font-size: 1rem;
+  color: var(--accent);
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+/* Input and Dropdown Styles */
+.sidebar-filters input {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--white);
+  font-size: 0.9rem;
+  transition: all var(--transition);
+}
+
+/* The dropdown “choose” button */
+.sidebar-filters select {
+  background: #2f2f2fda;
+  color: var(--white);
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  transition: all var(--transition);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.sidebar-filters select:hover {
+  border-color: var(--accent-hover);
+}
+
+.sidebar-filters select:focus {
+  border-color: var(--accent-hover);
+  box-shadow: 0 0 6px var(--accent-hover);
+  outline: none;
+}
+
+/* ---------------- Main Content ---------------- */
+.main-content {
+  margin-left: 130px; /* match sidebar width */
+  padding: 30px;
+  width: calc(100% - 260px);
+}
+
+.main-inner {
+  width: 100%;
+  padding: 0;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* ---------------- Paper Cards ---------------- */
+.papers-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* align from left */
+  align-items: flex-start;
+  gap: 30px;
+  width: 150%;
+  margin-top: 10px;
+}
+
+/* Each paper card */
+.paper-card {
+  background: rgba(35, 35, 35, 0.9);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 18px;
+  min-height: 300px;
+  width: 300px;              /* fixed width */
+  flex: 0 0 300px;           /* don't stretch or shrink */
+  box-sizing: border-box;
+  transition: all var(--transition);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.paper-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 0 10px rgba(0, 183, 255, 0.15);
+}
+
+.paper-card h5 {
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+  color: var(--white);
+}
+
+.paper-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 4px 0;
+}
+
+/* Card buttons */
+.card-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-actions .btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--white);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all var(--transition);
+}
+
+.card-actions .btn:hover {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+}
+
+/* ---------------- Animation ---------------- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------- Scrollbar ---------------- */
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(0, 183, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 1100px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    top: 0;
+    margin-top: 70px;
+    border-right: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    padding: 25px;
+  }
+
+  .papers-group {
+    justify-content: center;
+  }
+}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ paper.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="mb-3">
+    {{ paper.title }} — 
+    {% if paper.get_subject_display %}
+      {{ paper.get_subject_display }}
+    {% else %}
+      {{ paper.subject }}
+    {% endif %}
+    ({{ paper.get_level_display }})
+  </h3>
+
+  <p>
+    <strong>Paper Number:</strong> {{ paper.paper_number|default:"N/A" }} |
+    <strong>Variant:</strong> {{ paper.variant|default:"N/A" }} |
+    <strong>Year:</strong> {{ paper.year|default:"N/A" }} |
+    <strong>Session:</strong> {{ paper.session|default:"N/A" }}
+  </p>
+
+  <p><strong>Duration:</strong> {{ paper.duration_minutes }} minutes</p>
+
+  
+  
+
+  {% if user.is_authenticated %}
+    {% if paper.is_published %}
+      <a class="btn btn-outline-success" href="{% url 'questionpapers:start_paper' paper.pk %}">
+        📝 Start Paper
+      </a>
+    {% else %}
+      <div class="alert alert-info mt-3">
+        This paper is not yet published.
+      </div>
+    {% endif %}
+  {% endif %}
+
+  {% if user.is_staff %}
+  <a href="{% url 'questionpapers:paper_update' paper.pk %}" class="btn btn-warning mt-3">✏️ Edit</a>
+  <a href="{% url 'questionpapers:paper_delete' paper.pk %}" class="btn btn-danger mt-3">🗑️ Delete</a>
+{% endif %}
+
+
+</div>
+{% endblock %}

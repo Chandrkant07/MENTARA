@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Result - {{ attempt.paper.title }}{% endblock %}
+
+{% block content %}
+<h2>Paper Result</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+
+        <!-- Paper Info -->
+        <h4>{{ attempt.paper.title }} — {{ attempt.paper.subject.name }} ({{ attempt.paper.level }})</h4>
+        <p>
+            Paper Number: {{ attempt.paper.paper_number }} | 
+            Variant: {{ attempt.paper.variant }} | 
+            Year: {{ attempt.paper.year }}
+        </p>
+        <p>Started at: {{ attempt.started_at }}</p>
+        <p>Finished at: {{ attempt.finished_at }}</p>
+        <p>Auto Submitted: {{ attempt.auto_submitted }}</p>
+
+        <!-- Score Section -->
+        <div class="mt-3 mb-3 p-3 border rounded bg-light text-dark">
+            {% if evaluation %}
+                <h5>Score: {{ evaluation.marks }} / {{ attempt.max_score }}</h5>
+            {% elif attempt.score %}
+                <h5>Score: {{ attempt.score }} / {{ attempt.max_score }}</h5>
+            {% else %}
+                <h5>Score: Not graded yet</h5>
+            {% endif %}
+        </div>
+
+        <!-- Uploaded Answer -->
+        {% if attempt.answer_file %}
+            <div class="mb-3">
+                <p>Uploaded Answer: 
+                    <a href="{{ attempt.answer_file.url }}" target="_blank">Download</a>
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Teacher Evaluation / Feedback -->
+        {% if evaluation %}
+    <div class="mt-4 p-3 border rounded" style="background-color: #1e1e1e; color: #e0e0e0;">
+        <h5 style="color: #f0ad4e;">Teacher Evaluation</h5>
+        <p><strong>Marks:</strong> {{ evaluation.marks }}</p>
+        <p><strong>Feedback:</strong> {{ evaluation.feedback|default:"No feedback provided" }}</p>
+        <p><em>Evaluated on: {{ evaluation.evaluated_at }}</em></p>
+    </div>
+{% else %}
+    <p><em>Evaluation not yet completed by the teacher.</em></p>
+{% endif %}
+
+
+    </div>
+</div>
+
+<a class="btn btn-primary mt-3" href="{% url 'questionpapers:paper_list' %}">Back to Papers</a>
+{% endblock %}

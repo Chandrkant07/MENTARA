@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{% if update_mode %}Edit Paper{% else %}Upload Question Paper{% endif %}{% endblock %}
+{% block content %}
+  <h2>{% if update_mode %}Edit Paper{% else %}Upload New Question Paper{% endif %}</h2>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {# If you want the subject dropdown and an "Add" button next to it #}
+    <div>
+      {{ form.subject.label_tag }}
+      {{ form.subject }}
+      <a href="{% url 'questionpapers:add_subject' %}?next={% url 'questionpapers:paper_create' %}" class="btn btn-sm btn-outline-primary">Add subject</a>
+    </div>
+
+    {# Render other fields normally #}
+    {% for field in form %}
+      {% if field.name != 'subject' %}
+        <div class="form-group">
+          {{ field.label_tag }}
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endif %}
+    {% endfor %}
+
+    <button class="btn btn-success" type="submit">{% if update_mode %}Update{% else %}Upload Paper{% endif %}</button>
+  </form>
+{% endblock %}
+

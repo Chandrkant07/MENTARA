@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static '/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <h2>Welcome, {{ request.user.username }}</h2>
+
+  {% if is_teacher %}
+  <!-- ========================================= -->
+  <!-- 🧑‍🏫 TEACHER DASHBOARD -->
+  <!-- ========================================= -->
+  <div class="dashboard-section teacher-section">
+
+    <!-- ===== Overview Cards ===== -->
+    <div class="stats-cards">
+      <div class="stat-card"><h5>Total Papers</h5><p>{{ total_papers }}</p></div>
+      <div class="stat-card"><h5>Total Attempts</h5><p>{{ total_attempts }}</p></div>
+      <div class="stat-card"><h5>Pending Evaluations</h5><p>{{ pending_evals }}</p></div>
+      <div class="stat-card"><h5>Avg Class Score</h5>
+        <p>{% if avg_class_score %}{{ avg_class_score|floatformat:1 }}%{% else %}—{% endif %}</p>
+      </div>
+    </div>
+
+    <!-- ===== Class Performance ===== -->
+    <div class="section-card">
+      <h3>📘 Class Performance by Paper</h3>
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Paper</th>
+            <th>Subject</th>
+            <th>Attempts</th>
+            <th>Avg Score</th>
+            <th>Completion %</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for info in paper_evaluation_data %}
+          <tr>
+            <td>{{ info.paper.title }}</td>
+            <td>{{ info.paper.subject.name }}</td>
+            <td>{{ info.attempts }}</td>
+            <td>{{ info.avg_score }}%</td>
+            <td>
+              {% if info.total_students > 0 %}
+                {{ info.completion_pct }}%
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">No papers found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== Evaluation Summary ===== -->
+    <div class="section-card">
+      <h3>🧾 Evaluation Summary</h3>
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Paper</th>
+            <th>Total Attempts</th>
+            <th>Pending</th>
+            <th>Completed</th>
+            <th>Avg Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for info in paper_evaluation_data %}
+          <tr>
+            <td>{{ info.paper.title }}</td>
+            <td>{{ info.attempts }}</td>
+            <td>{{ info.pending }}</td>
+            <td>{{ info.completed }}</td>
+            <td>{{ info.avg_score }}%</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">No evaluations available.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== Quick Actions ===== -->
+    <div class="teacher-actions">
+      <a href="{% url 'questionpapers:teacher_paper_list' %}" class="btn btn-outline-info">
+        📄 Evaluation Panel
+      </a>
+      <a href="{% url 'questionpapers:paper_create' %}" class="btn btn-success">
+        ➕ Create New Paper
+      </a>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- ========================================= -->
+  <!-- 🎓 STUDENT DASHBOARD -->
+  <!-- ========================================= -->
+  <div class="dashboard-section student-section">
+
+    <!-- ===== Overview Cards ===== -->
+    <div class="stats-cards">
+      <div class="stat-card"><h5>Total Attempts</h5><p>{{ total_attempts }}</p></div>
+      <div class="stat-card"><h5>Average Score</h5><p>{{ avg_score }}%</p></div>
+      <div class="stat-card"><h5>Pending Papers</h5><p>{{ pending_papers|length }}</p></div>
+    </div>
+
+    <!-- ===== Recent Attempts ===== -->
+    <div class="section-card">
+      <h3>🧠 My Recent Paper Attempts</h3>
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Paper</th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Started</th>
+            <th>Finished</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attempt in attempts %}
+          <tr>
+            <td>{{ attempt.paper.title }}</td>
+            <td>
+              {% if attempt.evaluation %}
+                {{ attempt.evaluation.marks }} / {{ attempt.max_score }}
+              {% elif attempt.score %}
+                {{ attempt.score }} / {{ attempt.max_score }}
+              {% else %}
+                <span class="text-muted">Not Evaluated</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if attempt.auto_submitted %}
+                <span class="status-badge auto">Auto Submitted</span>
+              {% elif attempt.submitted or attempt.finished_at %}
+                <span class="status-badge done">Completed</span>
+              {% else %}
+                <span class="status-badge pending">Pending</span>
+              {% endif %}
+            </td>
+            <td>{{ attempt.started_at|date:"Y-m-d H:i" }}</td>
+            <td>{% if attempt.finished_at %}{{ attempt.finished_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5">No attempts yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== Pending Papers ===== -->
+    <div class="section-card">
+      <h3>📅 Upcoming / Pending Papers</h3>
+      <ul class="pending-list">
+        {% for item in pending_papers %}
+          {% with paper=item.paper total_students=item.total_students %}
+            <li>
+              <div>
+                <strong>{{ paper.title }}</strong> — <span>{{ paper.subject.name }}</span>
+                <small class="muted">[{{ total_students }} students attempted]</small>
+              </div>
+              <a href="{% url 'questionpapers:paper_detail' paper.id %}" class="btn-small">Attempt Now</a>
+            </li>
+          {% endwith %}
+        {% empty %}
+          <li>All papers attempted 🎉</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- ===== Recent Quizzes ===== -->
+    <div class="section-card">
+      <h3>🏆 Recent Quizzes</h3>
+      <table class="dashboard-table small">
+        <thead>
+          <tr><th>Quiz</th><th>Score</th><th>Date</th></tr>
+        </thead>
+        <tbody>
+          {% for quiz in quizzes %}
+          <tr>
+            <td>{{ quiz.quiz.title }}</td>
+            <td>{{ quiz.score }} / {{ quiz.max_score }}</td>
+            <td>{{ quiz.finished_at|date:"Y-m-d H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3">No quizzes taken yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

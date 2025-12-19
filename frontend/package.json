@@ -1,0 +1,40 @@
+{
+  "name": "mentara-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 3000 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "jest --passWithNoTests",
+    "test:e2e": "playwright test",
+    "smoke:admin": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Stop'; $frontend='http://127.0.0.1:3000/'; $backend='http://127.0.0.1:8000/api/health/'; try { (Invoke-WebRequest -Uri $frontend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Frontend not reachable at http://127.0.0.1:3000. Start: npm run dev' }; try { (Invoke-WebRequest -Uri $backend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Backend not reachable at http://127.0.0.1:8000. Start: python manage.py runserver 127.0.0.1:8000' }; $env:PW_BASE_URL='http://127.0.0.1:3000'; $env:PW_API_BASE='http://127.0.0.1:8000/api'; npx playwright test admin-smoke admin-crud --project=chromium --timeout=60000\"",
+    "smoke:teacher": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Stop'; $frontend='http://127.0.0.1:3000/'; $backend='http://127.0.0.1:8000/api/health/'; try { (Invoke-WebRequest -Uri $frontend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Frontend not reachable at http://127.0.0.1:3000. Start: npm run dev' }; try { (Invoke-WebRequest -Uri $backend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Backend not reachable at http://127.0.0.1:8000. Start: python manage.py runserver 127.0.0.1:8000' }; $env:PW_BASE_URL='http://127.0.0.1:3000'; $env:PW_API_BASE='http://127.0.0.1:8000/api'; npx playwright test teacher-smoke teacher-flow --project=chromium --timeout=60000\"",
+    "smoke:student": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$ErrorActionPreference='Stop'; $frontend='http://127.0.0.1:3000/'; $backend='http://127.0.0.1:8000/api/health/'; try { (Invoke-WebRequest -Uri $frontend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Frontend not reachable at http://127.0.0.1:3000. Start: npm run dev' }; try { (Invoke-WebRequest -Uri $backend -UseBasicParsing -TimeoutSec 5) | Out-Null } catch { throw 'Backend not reachable at http://127.0.0.1:8000. Start: python manage.py runserver 127.0.0.1:8000' }; $env:PW_BASE_URL='http://127.0.0.1:3000'; $env:PW_API_BASE='http://127.0.0.1:8000/api'; npx playwright test student-smoke student-flow --project=chromium --timeout=60000\""
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.9",
+    "@hello-pangea/dnd": "^18.0.1",
+    "@heroicons/react": "^2.2.0",
+    "axios": "^1.13.2",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.25",
+    "lucide-react": "^0.555.0",
+    "react": "^18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dom": "^18.3.1",
+    "react-hot-toast": "^2.6.0",
+    "react-router-dom": "^7.9.6",
+    "recharts": "^3.5.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@vitejs/plugin-react": "^4.3.0",
+    "autoprefixer": "^10.4.18",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.4.8"
+  }
+}

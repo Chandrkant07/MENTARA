@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage: {{ quiz.title }}</h2>
+<p>Subject: {{ quiz.subject }} | Difficulty: {{ quiz.difficulty }}</p>
+
+<div style="margin-top:10px;">
+  <a href="{% url 'quizzes:add_question' quiz.id %}" class="btn btn-success">Add Question</a>
+  <a href="{% url 'quizzes:edit_quiz' quiz.id %}" class="btn btn-primary">Edit Quiz</a>
+  <form method="post" action="{% url 'quizzes:delete_quiz' quiz.id %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this quiz and all its questions?');">Delete Quiz</button>
+  </form>
+</div>
+
+<h3 style="margin-top:18px;">Questions</h3>
+<table class="table">
+  <thead>
+    <tr><th>#</th><th>Question</th><th>Correct</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for q in questions %}
+      {% if q.is_active %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ q.text|truncatechars:120 }}</td>
+          <td>{{ q.correct_answer }}</td>
+          <td>
+            <a href="{% url 'quizzes:edit_question' q.id %}" class="btn btn-sm btn-primary">Edit</a>
+            <form method="post" action="{% url 'quizzes:delete_question' q.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this question?');">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endif %}
+    {% empty %}
+      <tr><td colspan="4">No questions yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<a href="{% url 'quizzes:quiz_list' %}" class="btn btn-secondary">Back to Quizzes</a>
+{% endblock %}

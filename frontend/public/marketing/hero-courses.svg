@@ -1,0 +1,30 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(820 430) rotate(90) scale(560 1000)">
+      <stop stop-color="#3B82F6" stop-opacity="0.45"/>
+      <stop offset="0.55" stop-color="#06B6D4" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#0A0B0F"/>
+    </radialGradient>
+    <linearGradient id="folder" x1="420" y1="300" x2="1180" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="#0A0B0F"/>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+
+  <g opacity="0.9">
+    <rect x="320" y="220" width="960" height="500" rx="34" fill="#111218" fill-opacity="0.55" stroke="#FFFFFF" stroke-opacity="0.12"/>
+
+    <g opacity="0.95">
+      <path d="M500 360 H760 C800 360 820 340 840 320 H1100 C1140 320 1160 340 1160 380 V640 C1160 680 1140 700 1100 700 H500 C460 700 440 680 440 640 V420 C440 380 460 360 500 360 Z" fill="url(#folder)" stroke="#FFFFFF" stroke-opacity="0.12"/>
+      <path d="M470 470 H1130" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="6" stroke-linecap="round"/>
+      <path d="M470 540 H1050" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="6" stroke-linecap="round"/>
+      <path d="M470 610 H980" stroke="#FFFFFF" stroke-opacity="0.10" stroke-width="6" stroke-linecap="round"/>
+
+      <circle cx="520" cy="410" r="10" fill="#6366F1" fill-opacity="0.85"/>
+      <circle cx="560" cy="410" r="10" fill="#EC4899" fill-opacity="0.70"/>
+      <circle cx="600" cy="410" r="10" fill="#3B82F6" fill-opacity="0.70"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/question_manage.css' %}">
+
+<div class="manage-questions-container">
+
+  <h2 class="page-title">Manage Questions for: <span class="paper-title">{{ paper.title }}</span></h2>
+
+  <!-- --------------------- Add / Edit Question Form --------------------- -->
+  <div class="question-form-section">
+    <form method="post" enctype="multipart/form-data" class="question-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary">
+          {% if edit_mode %}Update Question{% else %}Add Question{% endif %}
+        </button>
+        {% if edit_mode %}
+          <a href="{% url 'questionpapers:upload_questions' paper.id %}" class="btn btn-secondary cancel-btn">Cancel</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <hr class="section-divider">
+
+  <h3 class="section-title">Existing Questions</h3>
+
+  {% if questions %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="questions-list">
+        {% for q in questions %}
+          <div class="question-card">
+            <div class="question-header">
+              <div class="question-info">
+                <strong>Q{{ q.order }}</strong>
+                <span class="question-type">{{ q.question_type }}</span>
+              </div>
+              {% if q.question_image %}
+                <img src="{{ q.question_image.url }}" alt="Question Image" class="question-thumbnail">
+              {% endif %}
+            </div>
+
+            <!-- ------------------- Marks Input ------------------- -->
+            <div class="question-body" style="margin-top:10px;">
+              <label for="marks_{{ q.id }}"><strong>Marks:</strong></label>
+              <input type="number" step="0.01" min="0" name="marks_{{ q.id }}"
+                     id="marks_{{ q.id }}" value="{{ q.marks|default_if_none:'' }}"
+                     class="form-control" style="width: 100px; display:inline-block; margin-left:10px;">
+            </div>
+
+            <div class="question-actions">
+              <a href="?edit={{ q.id }}" class="btn btn-warning btn-sm edit-btn">Edit</a>
+              <a href="?delete={{ q.id }}" class="btn btn-danger btn-sm delete-btn"
+                 onclick="return confirm('Are you sure you want to delete this question?');">Delete</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- ------------------- Save Marks Button ------------------- -->
+      <div class="form-buttons mt-3">
+        <button type="submit" class="btn btn-success">Save Marks</button>
+      </div>
+    </form>
+  {% else %}
+    <p class="no-questions-text">No questions uploaded yet.</p>
+  {% endif %}
+
+  <div class="back-btn-container mt-3">
+    <a href="{% url 'questionpapers:paper_list' %}" class="btn btn-outline-secondary back-btn">← Back to Papers</a>
+  </div>
+</div>
+
+<script>
+window.addEventListener("load", () => {
+  const overlay = document.getElementById("overlay");
+  const popup = document.getElementById("popup");
+  const closeBtn = document.querySelector(".close-btn");
+
+  if (overlay) overlay.style.display = "none";
+  if (popup) popup.style.display = "none";
+  if (closeBtn) closeBtn.style.display = "none";
+});
+</script>
+
+{% endblock %}

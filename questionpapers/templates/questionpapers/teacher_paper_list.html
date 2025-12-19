@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>All Question Papers</h2>
+
+    <ul class="list-group">
+        {% for paper in papers %}
+        <li class="list-group-item bg-dark text-light mb-2 rounded p-3">
+            <strong>{{ paper.title }}</strong>
+            <span class="text-muted">({{ paper.subject.name }} - {{ paper.year }})</span>
+            <a href="{% url 'questionpapers:teacher_attempts' paper.id %}" class="btn btn-outline-info btn-sm float-right">
+                View Attempts
+            </a>
+        </li>
+        {% empty %}
+        <li class="list-group-item bg-dark text-light">No question papers found.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

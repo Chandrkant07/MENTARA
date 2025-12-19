@@ -1,0 +1,18 @@
+/* Complementary styles for Mentara test-taking UI */
+.mentara-test .layout { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+.question-area .question-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sticky-panel { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 16px; }
+.segmented-progress { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.segment { height: 16px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.14); }
+.segment.answered { background: rgba(124,231,255,0.35); }
+.segment.unanswered { background: rgba(255,255,255,0.08); }
+.segment.flagged { box-shadow: 0 0 0 2px #FB7185 inset; }
+.segment.current { outline: 2px solid #7CE7FF; }
+.mentara-modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 9999; }
+.mentara-modal.open { display: flex; }
+.modal-content { width: 380px; }
+.mcq-option { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.option-label { display: inline-block; width: 28px; height: 28px; border-radius: 8px; text-align: center; line-height: 28px; background: rgba(255,255,255,0.08); color: #fff; }
+.nav-actions { display: flex; gap: 12px; margin-top: 16px; }
+.global-timer { font-weight: 700; }
+@media (max-width: 992px) { .mentara-test .layout { grid-template-columns: 1fr; } .sticky-panel { position: static; } }

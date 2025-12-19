@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}  <!-- Load static files -->
+
+{% block content %}
+<h3>{{ question.quiz.title }}</h3>
+<p>Question {{ question_index|add:1 }} of {{ total }}</p>
+
+<form method="post">
+  {% csrf_token %}
+  
+  <!-- Question Text and Image -->
+  <div style="margin:12px 0;">
+    <p style="font-weight:600; font-size:1.1rem;">{{ question.text }}</p>
+
+    {% if question.image_url %}
+      <div style="text-align:center; margin-top:8px;">
+        <img src="{% static question.image_url %}" 
+             alt="question image" 
+             style="max-width:300px; height:auto; display:block;">
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Options -->
+  <div style="margin-top:12px;">
+    <label style="display:block; margin-bottom:6px;">
+      <input type="radio" name="answer" value="A"> A. {{ question.option_a }}
+    </label>
+    <label style="display:block; margin-bottom:6px;">
+      <input type="radio" name="answer" value="B"> B. {{ question.option_b }}
+    </label>
+    <label style="display:block; margin-bottom:6px;">
+      <input type="radio" name="answer" value="C"> C. {{ question.option_c }}
+    </label>
+    <label style="display:block; margin-bottom:6px;">
+      <input type="radio" name="answer" value="D"> D. {{ question.option_d }}
+    </label>
+  </div>
+
+  <!-- Submit Button -->
+  <div style="margin-top:16px;">
+    <button type="submit" class="btn btn-primary">Submit & Next</button>
+  </div>
+
+</form>
+{% endblock %}

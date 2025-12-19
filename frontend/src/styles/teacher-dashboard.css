@@ -1,0 +1,392 @@
+/* Teacher Dashboard Styles */
+
+.teacher-dashboard-container {
+  min-height: 100vh;
+  background: transparent;
+  padding: 32px 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.teacher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.teacher-title {
+  font-size: 36px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #A6FFCB 0%, #00C2A8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+
+.teacher-subtitle {
+  font-size: 16px;
+  color: #BFC3C8;
+}
+
+.create-exam-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #A6FFCB 0%, #00C2A8 100%);
+  color: #0B0B0D;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 24px rgba(2, 6, 23, 0.55);
+}
+
+.create-exam-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(166, 255, 203, 0.5);
+}
+
+/* Stats Grid */
+.teacher-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.teacher-stat-card {
+  background: rgba(16, 17, 20, 0.4);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.teacher-stat-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(166, 255, 203, 0.3);
+  box-shadow: 0 12px 40px rgba(166, 255, 203, 0.15);
+}
+
+.teacher-stat-card.alert {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.teacher-stat-card.alert:hover {
+  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.2);
+}
+
+/* Content Grid */
+.teacher-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.teacher-section {
+  background: rgba(16, 17, 20, 0.35);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.view-all-link {
+  font-size: 14px;
+  color: #00C2A8;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.view-all-link:hover {
+  color: #A6FFCB;
+}
+
+/* Exams List */
+.exams-list {
+  display: grid;
+  gap: 12px;
+}
+
+.exam-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 12, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  transition: all 0.2s ease;
+}
+
+.exam-item:hover {
+  border-color: rgba(166, 255, 203, 0.3);
+  transform: translateX(4px);
+}
+
+.exam-info {
+  flex: 1;
+}
+
+.exam-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.exam-meta {
+  font-size: 13px;
+  color: #BFC3C8;
+}
+
+.exam-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  background: rgba(166, 255, 203, 0.1);
+  color: #00C2A8;
+  border: 1px solid rgba(166, 255, 203, 0.2);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(166, 255, 203, 0.2);
+  border-color: rgba(166, 255, 203, 0.4);
+}
+
+.action-btn.edit {
+  background: rgba(107, 183, 255, 0.1);
+  color: #6AB7FF;
+  border-color: rgba(107, 183, 255, 0.2);
+}
+
+.action-btn.edit:hover {
+  background: rgba(107, 183, 255, 0.2);
+  border-color: rgba(107, 183, 255, 0.4);
+}
+
+/* Submissions List */
+.submissions-list {
+  display: grid;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.submissions-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.submissions-list::-webkit-scrollbar-track {
+  background: rgba(126, 231, 255, 0.05);
+  border-radius: 3px;
+}
+
+.submissions-list::-webkit-scrollbar-thumb {
+  background: rgba(126, 231, 255, 0.2);
+  border-radius: 3px;
+}
+
+.submissions-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(126, 231, 255, 0.3);
+}
+
+.submission-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 10, 12, 0.35);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 14px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.submission-item:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  transform: translateX(4px);
+}
+
+.submission-info {
+  flex: 1;
+}
+
+.student-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(16, 17, 20, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.student-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.student-initials {
+  font-weight: 700;
+  color: #E5E7EB;
+}
+
+.student-meta {
+  min-width: 0;
+}
+
+.student-grade {
+  color: #8A8C91;
+}
+
+.submission-student {
+  font-size: 15px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.submission-exam {
+  font-size: 13px;
+  color: #BFC3C8;
+  margin-bottom: 2px;
+}
+
+.submission-date {
+  font-size: 12px;
+  color: #8A8C91;
+}
+
+.grade-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  color: #0B0B0D;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.3);
+}
+
+.grade-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(251, 191, 36, 0.5);
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(17, 18, 22, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(166, 255, 203, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+  border-color: rgba(166, 255, 203, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(166, 255, 203, 0.15);
+}
+
+.action-icon {
+  font-size: 32px;
+}
+
+.action-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .teacher-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .teacher-dashboard-container {
+    padding: 24px 16px;
+  }
+
+  .teacher-title {
+    font-size: 28px;
+  }
+
+  .teacher-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exam-item, .submission-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .exam-actions {
+    width: 100%;
+  }
+
+  .action-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .grade-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

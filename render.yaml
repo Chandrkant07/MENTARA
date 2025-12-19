@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: mentara-backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash -lc "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn ib_project.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120"
+    autoDeploy: true
+    envVars:
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mentara-db
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        # Allows any <service>.onrender.com hostname.
+        value: ".onrender.com"
+
+      # Set these after you know your Netlify site URL.
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://YOUR_NETLIFY_SITE.netlify.app"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://YOUR_NETLIFY_SITE.netlify.app"
+      - key: FRONTEND_URL
+        value: "https://YOUR_NETLIFY_SITE.netlify.app"
+
+databases:
+  - name: mentara-db
+    plan: free

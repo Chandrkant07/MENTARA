@@ -1,0 +1,108 @@
+<div class="question-card">
+  <input type="hidden" id="current_q_index" value="{{ q_index }}">
+  <input type="hidden" id="current_q_order" value="{{ q_index|add:1 }}">
+
+  <div class="question-card-content">
+    
+    {% if question.question_image %}
+    <!-- -------------------- Question Image -------------------- -->
+    <div class="question-image-wrapper">
+      <img src="{{ question.question_image.url }}" class="question-img" alt="Question Image">
+      <button type="button" class="view-full-btn btn btn-sm btn-info"
+              onclick="openFullImage('{{ question.question_image.url }}')">View Full</button>
+    </div>
+    {% endif %}
+
+    <!-- -------------------- Question Text & Options -------------------- -->
+    <div class="question-text-wrapper">
+
+      <!-- Question title & difficulty -->
+      <div class="question-header d-flex align-items-center mb-2">
+        <p class="question-text mb-0">{{ question.question_text }}</p>
+        {% if question.difficulty_level %}
+          <span class="difficulty-badge {{ question.difficulty_level|lower }}">
+            {{ question.difficulty_level }}
+          </span>
+        {% endif %}
+      </div>
+
+      {% if question.question_type == 'MCQ' %}
+      <ul class="mcq-options">
+        <li>
+          <label>
+            <input type="radio" name="option" value="A"
+              {% if answer.selected_option == 'A' %}checked{% endif %}> 
+            A: {{ question.option_a|default_if_none:"" }}
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="option" value="B"
+              {% if answer.selected_option == 'B' %}checked{% endif %}> 
+            B: {{ question.option_b|default_if_none:"" }}
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="option" value="C"
+              {% if answer.selected_option == 'C' %}checked{% endif %}> 
+            C: {{ question.option_c|default_if_none:"" }}
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="option" value="D"
+              {% if answer.selected_option == 'D' %}checked{% endif %}> 
+            D: {{ question.option_d|default_if_none:"" }}
+          </label>
+        </li>
+      </ul>
+      {% else %}
+<form class="written-form" enctype="multipart/form-data">
+  {% csrf_token %}
+  <label>Upload your answer (image/pdf):</label>
+  <input type="file" name="answer_file" accept="image/*,application/pdf">
+
+  <!-- Uploaded file display container -->
+  <div class="uploaded-file-container" id="uploaded-file-container">
+    {% if answer.answer_file %}
+      <p class="uploaded-link">
+        Uploaded: <a href="{{ answer.answer_file.url }}" target="_blank">{{ answer.answer_file.name|default:"View" }}</a>
+      </p>
+    {% endif %}
+  </div>
+</form>
+
+      {% endif %}
+
+      <!-- -------------------- Navigation Buttons -------------------- -->
+      <div class="nav mt-3">
+        {% if q_index > 0 %}
+          <button class="btn btn-secondary prev-btn" data-q_index="{{ q_index|add:-1 }}">Previous</button>
+        {% endif %}
+        {% if q_index|add:1 < q_total %}
+          <button class="btn btn-primary next-btn" data-q_index="{{ q_index|add:1 }}">Next</button>
+        {% else %}
+          <button class="btn btn-danger submit-btn">Submit Paper</button>
+        {% endif %}
+      </div>
+
+    </div> <!-- /.question-text-wrapper -->
+
+  </div> <!-- /.question-card-content -->
+</div> <!-- /.question-card -->
+
+<style>
+.difficulty-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #fff;
+  margin-left: 10px;
+}
+.difficulty-badge.easy { background-color: #28a745; }   /* green */
+.difficulty-badge.medium { background-color: #ffc107; color: #000; } /* yellow */
+.difficulty-badge.hard { background-color: #dc3545; }   /* red */
+</style>

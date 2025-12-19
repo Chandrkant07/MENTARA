@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>{{ paper.title }} — {{ paper.subject }} ({{ paper.level }})</h3>
+<p>Time remaining: <span id="timer">--:--:--</span></p>
+
+<!-- PDF Viewer -->
+<div style="height:80vh; border:1px solid #ddd;">
+  <iframe src="{{ paper.pdf.url }}" width="100%" height="100%" style="border:none;"></iframe>
+</div>
+
+<!-- Answer Submission Form -->
+<form id="submitForm" method="post" enctype="multipart/form-data" data-submitted="0">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button id="submitBtn" class="btn btn-success" type="submit">Submit Now</button>
+</form>
+
+<style>
+/* Difficulty badge styling */
+.difficulty-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #fff;
+  margin-left: 10px;
+}
+.difficulty-badge.easy { background-color: #28a745; }   /* green */
+.difficulty-badge.medium { background-color: #ffc107; color: #000; } /* yellow */
+.difficulty-badge.hard { background-color: #dc3545; }   /* red */
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+  // ------------------- Timer Initialization -------------------
+  let timeLeft = Number({{ remaining_seconds|default:0 }});
+  if (isNaN(timeLeft) || timeLeft < 0) timeLeft = 0;
+
+  function pad(n){ return n < 10 ? '0'+n : n; }
+
+  // ------------------- Timer & Auto-Submit -------------------
+  function updateTimer() {
+    const timerElem = document.getElementById('timer');
+    if (!timerElem) return;
+
+    if(timeLeft <= 0){
+      timerElem.innerText = "00:00:00";
+      autoSubmitForm();
+      return;
+    }
+
+    let hrs = Math.floor(timeLeft / 3600);
+    let mins = Math.floor((timeLeft % 3600) / 60);
+    let secs = timeLeft % 60;
+    timerElem.innerText = pad(hrs) + ":" + pad(mins) + ":" + pad(secs);
+    timeLeft -= 1;
+  }
+
+  function autoSubmitForm() {
+    const form = document.getElementById('submitForm');
+    const submitBtn = document.getElementById('submitBtn');
+    if(form && form.dataset.submitted !== '1'){
+      form.dataset.submitted = '1';
+      if(submitBtn) submitBtn.disabled = true;
+      form.submit();
+    }
+  }
+
+  updateTimer();
+  const timerInterval = setInterval(() => {
+    updateTimer();
+    if(timeLeft <= 0) clearInterval(timerInterval);
+  }, 1000);
+
+  // ------------------- 1 Minute Alert -------------------
+  if(timeLeft > 60){
+    setTimeout(function(){
+      alert('⏰ 1 minute left — your paper will be auto-submitted when time expires.');
+    }, (timeLeft - 60) * 1000);
+  }
+                          
+  // ------------------- Prevent Multiple Submissions -------------------
+  const submitBtn = document.getElementById('submitBtn');
+  const form = document.getElementById('submitForm');
+  if(submitBtn && form){
+    form.addEventListener('submit', function(event){
+      if(form.dataset.submitted === '1'){
+        event.preventDefault();
+        return false;
+      }
+      form.dataset.submitted = '1';
+      submitBtn.disabled = true;
+    });
+  }
+
+});
+</script>
+
+{% endblock %}

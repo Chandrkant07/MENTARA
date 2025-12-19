@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Upload Quiz Excel</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <div class="form-group">
+    <label>Select Excel File (.xlsx, .xls)</label><br>
+    <input type="file" name="excel" accept=".xls,.xlsx" required>
+  </div>
+  <br>
+  <button type="submit" class="btn btn-primary">Upload</button>
+  <a href="{% url 'quizzes:quiz_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
