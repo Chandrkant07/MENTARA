@@ -22,22 +22,49 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('access_token');
       const storedUser = localStorage.getItem('user');
 
-      if (token && storedUser) {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      let hydratedUser = null;
+      if (storedUser) {
         try {
-          setUser(JSON.parse(storedUser));
-          // Optionally verify token is still valid
+          hydratedUser = JSON.parse(storedUser);
+          setUser(hydratedUser);
+          // Don't block the app on a network call if we already have a user snapshot.
+          setLoading(false);
+        } catch {
+          hydratedUser = null;
+        }
+      }
+
+      try {
+        // If we didn't have a stored user, we must fetch one before unblocking protected routes.
+        if (!hydratedUser) {
           const response = await userAPI.getMe();
           setUser(response.data);
           localStorage.setItem('user', JSON.stringify(response.data));
-        } catch (err) {
-          // Token invalid, clear storage
+          setLoading(false);
+          return;
+        }
+
+        // Otherwise, refresh profile in the background.
+        const response = await userAPI.getMe();
+        setUser(response.data);
+        localStorage.setItem('user', JSON.stringify(response.data));
+      } catch (err) {
+        const status = err?.response?.status;
+        // Only hard-logout on an actual auth failure.
+        if (status === 401) {
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('user');
           setUser(null);
         }
+        // For transient network/5xx issues, keep the hydrated user and let the app continue.
+        if (!hydratedUser) setLoading(false);
       }
-      setLoading(false);
     };
 
     initAuth();

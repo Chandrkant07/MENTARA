@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BookOpen, ClipboardCheck, GraduationCap, Users, FileText, Sparkles } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const BASE_API = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
 const getToken = () => localStorage.getItem('access_token');
@@ -42,6 +43,9 @@ const getAvatarUrl = (avatar) => {
 };
 
 function TeacherDashboard() {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
   const [exams, setExams] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [students, setStudents] = useState([]);
@@ -53,8 +57,19 @@ function TeacherDashboard() {
   const recentStudents = useMemo(() => students.slice(0, 10), [students]);
 
   useEffect(() => {
+    // If token is missing, bail out to login (ProtectedRoute should prevent this,
+    // but this keeps the page resilient if accessed directly).
+    if (!getToken()) {
+      navigate('/login', { replace: true });
+      return;
+    }
     loadTeacherDashboard();
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login', { replace: true });
+  };
 
   async function loadTeacherDashboard() {
     try {
@@ -135,6 +150,16 @@ function TeacherDashboard() {
               <FileText className="w-4 h-4 inline-block mr-2" />
               Manage Exams
             </Link>
+
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-text">{user?.first_name} {user?.last_name}</p>
+                <p className="text-xs text-text-secondary">{user?.email}</p>
+              </div>
+              <button onClick={handleLogout} className="btn-secondary text-sm">
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </header>
