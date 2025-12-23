@@ -8,6 +8,27 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const API_BASE = (api?.defaults?.baseURL || '').replace(/\/+$/, '');
+const BACKEND_ORIGIN = API_BASE.replace(/\/?api\/?$/, '');
+
+const resolveMediaUrl = (maybeUrl) => {
+  if (!maybeUrl) return null;
+  if (typeof maybeUrl !== 'string') return null;
+
+  // If backend already returned an absolute URL, use it.
+  if (/^https?:\/\//i.test(maybeUrl)) {
+    // Avoid mixed-content issues if proxy produced http URLs.
+    if (window?.location?.protocol === 'https:' && maybeUrl.startsWith('http://') && maybeUrl.includes('onrender.com')) {
+      return maybeUrl.replace(/^http:\/\//i, 'https://');
+    }
+    return maybeUrl;
+  }
+
+  // Convert relative /media/... into backend absolute URL.
+  if (maybeUrl.startsWith('/')) return `${BACKEND_ORIGIN}${maybeUrl}`;
+  return `${BACKEND_ORIGIN}/${maybeUrl}`;
+};
+
 const TestTaking = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -315,7 +336,7 @@ const TestTaking = () => {
                   
                   {currentQuestion.image && (
                     <img 
-                      src={currentQuestion.image} 
+                      src={resolveMediaUrl(currentQuestion.image)} 
                       alt="Question" 
                       className="mt-4 rounded-xl max-w-full"
                     />

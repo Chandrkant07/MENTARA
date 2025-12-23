@@ -1,4 +1,5 @@
 # ib_project/urls.py
+import os
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -54,6 +55,9 @@ urlpatterns = [
     path('questionpapers/', include(('questionpapers.urls', 'questionpapers'), namespace='questionpapers')),
 ]
 
-# Serve media files during development
-if settings.DEBUG:
+# Serve media files.
+# In production this is not ideal for high-traffic deployments, but it unblocks
+# showing uploaded question images/PDFs on Render when not using S3.
+serve_media = os.getenv('SERVE_MEDIA', 'True') == 'True'
+if settings.DEBUG or serve_media:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

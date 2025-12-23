@@ -262,3 +262,10 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    # When running behind a reverse proxy (Render/Cloudflare/etc), Django may see
+    # requests as plain HTTP unless we honor forwarded proto/host headers.
+    # This affects request.build_absolute_uri() for media URLs (question images/PDFs)
+    # and can otherwise cause mixed-content blocking in the browser.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
