@@ -1,18 +1,32 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
+/** @typedef {import('@playwright/test').Page} Page */
+/** @typedef {import('@playwright/test').APIRequestContext} APIRequestContext */
+/** @typedef {import('@playwright/test').APIResponse} APIResponse */
+/** @typedef {import('@playwright/test').Response} Response */
+
 const BASE_URL = process.env.PW_BASE_URL || 'http://localhost:3000';
 const API_BASE = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api';
 const HEALTH_TIMEOUT_MS = Number(
   process.env.PW_HEALTH_TIMEOUT_MS || (API_BASE.includes('onrender.com') ? 90_000 : 5_000)
 );
 
+/**
+ * @param {Page} page
+ * @param {RegExp} urlRegex
+ * @returns {Promise<Response>}
+ */
 async function waitForPostResponse(page, urlRegex) {
-  return page.waitForResponse((resp) => {
+  return page.waitForResponse(/** @param {Response} resp */ (resp) => {
     return resp.request().method() === 'POST' && urlRegex.test(resp.url());
   });
 }
 
+/**
+ * @param {APIResponse | Response} resp
+ * @param {string} label
+ */
 async function assertOkJsonResponse(resp, label) {
   if (resp.ok()) return;
   const body = await resp.text().catch(() => '');
@@ -23,6 +37,9 @@ async function assertOkJsonResponse(resp, label) {
   );
 }
 
+/**
+ * @param {{ request: APIRequestContext }} arg
+ */
 async function preflightBackend({ request }) {
   try {
     const resp = await request.get(`${API_BASE}/health/`, { timeout: HEALTH_TIMEOUT_MS });
@@ -35,6 +52,9 @@ async function preflightBackend({ request }) {
   }
 }
 
+/**
+ * @param {Page} page
+ */
 async function loginAsAdmin(page) {
   await page.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
 
@@ -58,7 +78,7 @@ async function loginAsAdmin(page) {
 
   const tokenKeys = ['access_token', 'access', 'token'];
   const hasToken = async () =>
-    page.evaluate((keys) => {
+    page.evaluate(/** @param {Array<string>} keys */ (keys) => {
       for (const key of keys) {
         const v = window.localStorage.getItem(key);
         if (v && v.length > 10) return { key, length: v.length };

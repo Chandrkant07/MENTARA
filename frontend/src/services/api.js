@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 // Base API URL - adjust for production
-const API_BASE_URL = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+// Prefer same-origin '/api' so Docker+Nginx deployments work without per-environment rebuilds.
+// Override with VITE_BASE_API when frontend and backend are on different origins (e.g., Netlify + Render).
+const API_BASE_URL = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 // Create axios instance with default config
 const api = axios.create({

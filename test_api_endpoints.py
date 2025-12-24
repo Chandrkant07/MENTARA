@@ -1,6 +1,25 @@
 """
 Test script to verify all API endpoints are working correctly
 """
+import os
+import sys
+
+
+def _running_under_pytest() -> bool:
+    return (
+        'PYTEST_CURRENT_TEST' in os.environ
+        or any(m == 'pytest' or m.startswith('pytest.') for m in sys.modules)
+    )
+
+
+if _running_under_pytest():
+    import pytest  # type: ignore
+
+    pytest.skip(
+        'Standalone integration script (uses requests against a running server). Run directly, not via pytest.',
+        allow_module_level=True,
+    )
+
 import requests
 import json
 

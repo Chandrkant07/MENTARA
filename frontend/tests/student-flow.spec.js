@@ -1,12 +1,20 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
 
+/** @typedef {import('@playwright/test').Page} Page */
+/** @typedef {import('@playwright/test').APIRequestContext} APIRequestContext */
+/** @typedef {import('@playwright/test').APIResponse} APIResponse */
+
 const BASE_URL = process.env.PW_BASE_URL || 'http://127.0.0.1:3000';
 const API_BASE = process.env.PW_API_BASE || 'http://127.0.0.1:8000/api';
 const HEALTH_TIMEOUT_MS = Number(
   process.env.PW_HEALTH_TIMEOUT_MS || (API_BASE.includes('onrender.com') ? 90_000 : 5_000)
 );
 
+/**
+ * @param {APIResponse} resp
+ * @param {string} label
+ */
 async function assertOkJson(resp, label) {
   const text = await resp.text();
   let json = null;
@@ -19,6 +27,11 @@ async function assertOkJson(resp, label) {
   return json;
 }
 
+/**
+ * @param {APIRequestContext} request
+ * @param {string} username
+ * @param {string} password
+ */
 async function apiLogin(request, username, password) {
   const resp = await request.post(`${API_BASE}/auth/login/`, {
     data: { username, password },
@@ -28,6 +41,11 @@ async function apiLogin(request, username, password) {
   return data;
 }
 
+/**
+ * @param {APIRequestContext} request
+ * @param {string} accessToken
+ * @param {string} name
+ */
 async function apiCreateTopic(request, accessToken, name) {
   const resp = await request.post(`${API_BASE}/topics/`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -38,6 +56,12 @@ async function apiCreateTopic(request, accessToken, name) {
   return data;
 }
 
+/**
+ * @param {APIRequestContext} request
+ * @param {string} accessToken
+ * @param {number|string} topicId
+ * @param {string} statement
+ */
 async function apiCreateQuestion(request, accessToken, topicId, statement) {
   const resp = await request.post(`${API_BASE}/questions/`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -57,6 +81,12 @@ async function apiCreateQuestion(request, accessToken, topicId, statement) {
   return data;
 }
 
+/**
+ * @param {APIRequestContext} request
+ * @param {string} accessToken
+ * @param {number|string} topicId
+ * @param {string} title
+ */
 async function apiCreateExam(request, accessToken, topicId, title) {
   const resp = await request.post(`${API_BASE}/exams/`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -78,6 +108,12 @@ async function apiCreateExam(request, accessToken, topicId, title) {
   return data;
 }
 
+/**
+ * @param {APIRequestContext} request
+ * @param {string} accessToken
+ * @param {number|string} examId
+ * @param {Array<number|string>} questionIds
+ */
 async function apiAddQuestionsToExam(request, accessToken, examId, questionIds) {
   const resp = await request.post(`${API_BASE}/exams/${examId}/add-questions/`, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -86,6 +122,11 @@ async function apiAddQuestionsToExam(request, accessToken, examId, questionIds) 
   await assertOkJson(resp, 'Add questions to exam');
 }
 
+/**
+ * @param {Page} page
+ * @param {string} username
+ * @param {string} password
+ */
 async function loginViaUi(page, username, password) {
   await page.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
   await page.locator('#username').fill(username);

@@ -63,7 +63,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_BASE_API=${VITE_BASE_API:-http://localhost:8000/api}
+      # Prefer same-origin via Nginx (/api -> backend). Override if deploying frontend separately.
+      - VITE_BASE_API=${VITE_BASE_API:-/api}
     depends_on:
       - backend
 

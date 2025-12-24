@@ -7,6 +7,25 @@ Run manually:
   python test_admin_api.py
 """
 
+import os
+import sys
+
+
+def _running_under_pytest() -> bool:
+    return (
+        'PYTEST_CURRENT_TEST' in os.environ
+        or any(m == 'pytest' or m.startswith('pytest.') for m in sys.modules)
+    )
+
+
+if _running_under_pytest():
+    import pytest  # type: ignore
+
+    pytest.skip(
+        'Standalone integration script (hits a running dev server). Run directly, not via pytest.',
+        allow_module_level=True,
+    )
+
 
 def main():
     import os

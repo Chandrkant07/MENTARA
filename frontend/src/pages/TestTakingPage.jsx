@@ -5,7 +5,7 @@ import AutosaveQueue from '../utils/AutosaveQueue';
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 import '../styles/test-taking.css';
 
-const BASE_API = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
+const BASE_API = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 const getToken = () => localStorage.getItem('access_token');
 const authHeaders = () => ({

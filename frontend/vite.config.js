@@ -3,5 +3,14 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  server: { port: 3000 },
+  server: {
+    port: 3000,
+    proxy: {
+      // Allow frontend code to call same-origin '/api' in dev; Vite will proxy to Django.
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
 });

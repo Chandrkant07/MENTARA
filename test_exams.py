@@ -4,6 +4,22 @@ import os
 import sys
 import django
 
+
+def _running_under_pytest() -> bool:
+    return (
+        'PYTEST_CURRENT_TEST' in os.environ
+        or any(m == 'pytest' or m.startswith('pytest.') for m in sys.modules)
+    )
+
+
+if _running_under_pytest():
+    import pytest  # type: ignore
+
+    pytest.skip(
+        'Standalone data audit script (reads DB directly). Run directly, not via pytest.',
+        allow_module_level=True,
+    )
+
 # Setup Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ib_project.settings')
 django.setup()

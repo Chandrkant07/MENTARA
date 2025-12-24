@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/bulk-upload.css';
 
-const BASE_API = import.meta.env.VITE_BASE_API || 'http://localhost:8000/api';
+const BASE_API = import.meta.env.VITE_BASE_API || '/api';
 const getToken = () => localStorage.getItem('access_token');
 const authHeaders = () => ({ 'Authorization': `Bearer ${getToken()}` });
 
