@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, ClipboardCheck, GraduationCap, Users, FileText, Sparkles, TrendingUp, Folder, ChevronDown, ChevronRight } from 'lucide-react';
+import { BookOpen, ClipboardCheck, GraduationCap, Users, FileText, Sparkles, TrendingUp, Folder, ChevronDown, ChevronRight, Activity, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import AppShell from '../components/layout/AppShell';
 import TeacherNav from '../components/layout/TeacherNav';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const BASE_API = (import.meta.env.VITE_BASE_API || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
 const getToken = () => localStorage.getItem('access_token');
@@ -300,17 +302,19 @@ function TeacherDashboard() {
   }
 
   const StatCard = ({ icon: Icon, label, value, tone }) => (
-    <div className={`card-elevated ${tone || ''}`}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center border border-elevated/50">
-            <Icon className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <div className="text-sm text-text-secondary">{label}</div>
-            <div className="text-2xl font-bold text-text">{value}</div>
-          </div>
+    <div className={`card-elevated hover:border-primary/30 hover:bg-surface/10 transition-colors ${tone || ''}`}
+    >
+      <div className="flex items-start justify-between mb-5">
+        <div className="w-12 h-12 rounded-xl bg-surface/40 flex items-center justify-center border border-elevated/50">
+          <Icon className="w-6 h-6 text-primary" />
         </div>
+        <div className="text-right">
+          <div className="text-3xl font-extrabold text-text leading-none">{value}</div>
+          <div className="text-xs text-text-secondary mt-1">{label}</div>
+        </div>
+      </div>
+      <div className="h-1 w-full rounded-full bg-surface overflow-hidden">
+        <div className="h-full w-1/2 bg-gradient-to-r from-primary to-accent" />
       </div>
     </div>
   );
@@ -322,6 +326,10 @@ function TeacherDashboard() {
       nav={<TeacherNav active="dashboard" />}
       right={(
         <>
+          <ThemeToggle />
+          <button onClick={loadTeacherDashboard} className="btn-secondary text-sm" disabled={loading}>
+            {loading ? 'Loading…' : 'Refresh'}
+          </button>
           <Link to="/teacher/exams" className="btn-secondary text-sm">
             <FileText className="w-4 h-4 inline-block mr-2" />
             Manage Exams
@@ -339,34 +347,59 @@ function TeacherDashboard() {
         </>
       )}
     >
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start mb-8">
-          <div className="lg:col-span-2">
-            <h1 className="text-3xl font-bold text-text mb-2">Teacher Dashboard</h1>
-            <p className="text-text-secondary">
-              Grade faster, track performance, and keep students moving.
-            </p>
-          </div>
-          <div className="card-elevated overflow-hidden">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2 text-text">
-                <Sparkles className="w-5 h-5 text-primary" />
-                <div className="font-semibold">Today’s Focus</div>
+        <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <div className="card-elevated p-0 overflow-hidden">
+            <div className="relative p-6 sm:p-8">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-surface/0 to-accent/10" />
+              <div className="absolute -top-28 -right-28 w-[520px] h-[520px] rounded-full bg-primary/10 blur-3xl" />
+              <div className="absolute -bottom-28 -left-28 w-[520px] h-[520px] rounded-full bg-accent/10 blur-3xl" />
+              <img
+                src="/marketing/hero-team.svg"
+                alt=""
+                className="hidden lg:block absolute right-6 bottom-0 w-[360px] opacity-35 pointer-events-none select-none"
+                draggable="false"
+              />
+
+              <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/50 border border-elevated/50 text-xs text-text-secondary mb-3">
+                    <Activity className="w-3.5 h-3.5 text-primary" />
+                    Teaching Dashboard
+                  </div>
+
+                  <h1 className="text-3xl sm:text-4xl font-bold text-text mb-2 truncate">
+                    Welcome, {user?.first_name || 'Teacher'}
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/40 border border-elevated/50">
+                      <ClipboardCheck className="w-4 h-4 text-primary" />
+                      {stats.pending_grading} pending grading
+                    </span>
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/40 border border-elevated/50">
+                      <Users className="w-4 h-4 text-primary" />
+                      {stats.total_students} students
+                    </span>
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/40 border border-elevated/50">
+                      <Zap className="w-4 h-4 text-primary" />
+                      {stats.total_exams} exams
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                  <Link to="/teacher/exams" className="btn-primary w-full sm:w-auto">
+                    <FileText className="w-4 h-4 inline-block mr-2" />
+                    Manage Exams
+                  </Link>
+                  <button onClick={loadTeacherDashboard} className="btn-secondary w-full sm:w-auto">
+                    Refresh Data
+                  </button>
+                </div>
               </div>
-              <div className="text-xs text-text-secondary">Auto-updates</div>
             </div>
-            <div className="flex gap-3 items-center">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <ClipboardCheck className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <div className="text-sm text-text-secondary">Pending grading</div>
-                <div className="text-xl font-bold text-text">{stats.pending_grading}</div>
-              </div>
-              <div className="flex-1" />
-              <button onClick={loadTeacherDashboard} className="btn-ghost text-sm">Refresh</button>
-            </div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard icon={BookOpen} label="Total Exams" value={stats.total_exams} />
@@ -377,6 +410,59 @@ function TeacherDashboard() {
             tone="border border-warning/30"
           />
           <StatCard icon={Users} label="Students" value={stats.total_students} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+          <button
+            type="button"
+            onClick={() => navigate('/teacher/exams')}
+            className="card-elevated text-left hover:border-primary/30 hover:bg-surface/10 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-text">Create / Edit Exams</div>
+                <div className="text-xs text-text-secondary mt-1">Build papers, attach questions, publish</div>
+              </div>
+              <FileText className="w-5 h-5 text-primary" />
+            </div>
+            <div className="mt-4 h-1 w-full rounded-full bg-surface overflow-hidden">
+              <div className="h-full w-2/3 bg-gradient-to-r from-primary to-accent" />
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => document.getElementById('pending-grading')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="card-elevated text-left hover:border-warning/40 hover:bg-surface/10 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-text">Grade Submissions</div>
+                <div className="text-xs text-text-secondary mt-1">Keep feedback fast and consistent</div>
+              </div>
+              <ClipboardCheck className="w-5 h-5 text-warning" />
+            </div>
+            <div className="mt-4 h-1 w-full rounded-full bg-surface overflow-hidden">
+              <div className="h-full w-1/2 bg-gradient-to-r from-warning to-accent" />
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => document.getElementById('students-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+            className="card-elevated text-left hover:border-primary/30 hover:bg-surface/10 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-text">View Students</div>
+                <div className="text-xs text-text-secondary mt-1">Track engagement and performance</div>
+              </div>
+              <Users className="w-5 h-5 text-primary" />
+            </div>
+            <div className="mt-4 h-1 w-full rounded-full bg-surface overflow-hidden">
+              <div className="h-full w-1/3 bg-gradient-to-r from-primary to-accent" />
+            </div>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -399,6 +485,12 @@ function TeacherDashboard() {
                       <div className="font-semibold text-text truncate">{row.exam_title}</div>
                       <div className="text-xs text-text-secondary">
                         Last attempt: {formatWhen(row.last_attempt_at)}
+                      </div>
+                      <div className="mt-2 h-1.5 w-full rounded-full bg-surface overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-accent"
+                          style={{ width: `${Math.min(100, Math.max(0, Number(row.avg_percentage) || 0))}%` }}
+                        />
                       </div>
                     </div>
 
@@ -434,7 +526,7 @@ function TeacherDashboard() {
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <select
-                    className="input text-sm"
+                    className="input text-sm min-w-[220px]"
                     value={selectedCurriculumId}
                     onChange={(e) => setSelectedCurriculumId(e.target.value)}
                     aria-label="Select curriculum"
@@ -448,7 +540,7 @@ function TeacherDashboard() {
                   </select>
 
                   <select
-                    className="input text-sm"
+                    className="input text-sm min-w-[140px]"
                     value={paperFilters.level}
                     onChange={(e) => setPaperFilters((p) => ({ ...p, level: e.target.value }))}
                     aria-label="Select level"
@@ -459,7 +551,7 @@ function TeacherDashboard() {
                   </select>
 
                   <select
-                    className="input text-sm"
+                    className="input text-sm min-w-[160px]"
                     value={paperFilters.paper_number}
                     onChange={(e) => setPaperFilters((p) => ({ ...p, paper_number: e.target.value }))}
                     aria-label="Select paper number"
@@ -501,6 +593,11 @@ function TeacherDashboard() {
                 <div>
                   <div className="text-xs text-text-secondary mb-2">Students who appeared (completed attempts)</div>
                   <div className="rounded-xl border border-elevated/50 bg-surface/30 overflow-hidden">
+                    <div className="grid grid-cols-12 gap-3 px-4 py-2 bg-surface/40 border-b border-elevated/50 text-xs text-text-secondary">
+                      <div className="col-span-7">Student</div>
+                      <div className="col-span-2 text-right">Attempts</div>
+                      <div className="col-span-3 text-right">Last</div>
+                    </div>
                     <div className="max-h-[320px] overflow-auto">
                       {!selectedTopic?.id && (
                         <div className="text-sm text-text-secondary p-4">Select a folder to see students.</div>
@@ -517,8 +614,11 @@ function TeacherDashboard() {
                       {selectedTopic?.id && !paperAttemptsLoading && paperAttemptRows.length > 0 && (
                         <div className="divide-y divide-elevated/50">
                           {paperAttemptRows.map((row, idx) => (
-                            <div key={idx} className="p-4 flex items-start justify-between gap-4">
-                              <div className="min-w-0">
+                            <div
+                              key={idx}
+                              className="grid grid-cols-12 gap-3 px-4 py-3 hover:bg-surface/40 transition-colors"
+                            >
+                              <div className="col-span-7 min-w-0">
                                 <div className="font-semibold text-text truncate">
                                   {row.user?.username || row.user?.email || 'Student'}
                                 </div>
@@ -527,14 +627,18 @@ function TeacherDashboard() {
                                     ? `${row.user?.first_name || ''} ${row.user?.last_name || ''}`.trim()
                                     : (row.user?.email || '—')}
                                 </div>
-                                <div className="text-xs text-text-secondary">
-                                  Last: {formatWhen(row.last_when)}
+                                <div className="text-xs text-text-secondary truncate">
+                                  Last exam: <span className="text-text-secondary">{row.last_exam || '—'}</span>
                                 </div>
                               </div>
 
-                              <div className="text-right shrink-0">
+                              <div className="col-span-2 text-right">
                                 <div className="font-semibold text-text">{row.attempts}</div>
-                                <div className="text-xs text-text-secondary">attempts</div>
+                                <div className="text-[11px] text-text-secondary">attempts</div>
+                              </div>
+
+                              <div className="col-span-3 text-right">
+                                <div className="text-xs text-text-secondary">{formatWhen(row.last_when)}</div>
                               </div>
                             </div>
                           ))}
@@ -579,7 +683,7 @@ function TeacherDashboard() {
               </div>
             </div>
 
-            <div className="card-elevated">
+            <div className="card-elevated" id="pending-grading">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-text flex items-center gap-2">
                   <ClipboardCheck className="w-5 h-5 text-primary" />
@@ -614,7 +718,7 @@ function TeacherDashboard() {
           </div>
 
           <div className="space-y-8">
-            <div className="card-elevated">
+            <div className="card-elevated" id="students-panel">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-text flex items-center gap-2">
                   <Users className="w-5 h-5 text-primary" />
@@ -626,7 +730,7 @@ function TeacherDashboard() {
                 {recentStudents.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-surface/40 border border-elevated/50"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-surface/40 border border-elevated/50 hover:border-primary/30 hover:bg-surface/60 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-xl overflow-hidden bg-bg border border-elevated/50 flex items-center justify-center flex-shrink-0">
                       {getAvatarUrl(s.avatar) ? (

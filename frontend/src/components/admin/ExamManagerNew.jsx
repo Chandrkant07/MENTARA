@@ -80,6 +80,9 @@ const ExamManagerNew = () => {
   const [questions, setQuestions] = useState([]);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [orderDirty, setOrderDirty] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -299,10 +302,82 @@ const ExamManagerNew = () => {
       toast.success(`✨ ${selectedQuestions.length} question(s) added successfully!`);
       setShowQuestionModal(false);
       setSelectedQuestions([]);
+      if (selectedExam?.id) {
+        await loadExamQuestions(selectedExam.id);
+      }
       fetchData();
     } catch (error) {
       console.error('Failed to add questions:', error);
       toast.error('Failed to add questions');
+    }
+  };
+
+  const normalizeExamQuestion = (item) => {
+    const questionId = item?.question_id ?? item?.id;
+    const statement = (item?.statement ?? item?.question_text ?? item?.question ?? '').toString();
+    const type = (item?.type ?? item?.question_type ?? 'MCQ').toString();
+    return {
+      ...item,
+      id: questionId,
+      question_id: questionId,
+      question_text: statement,
+      statement,
+      question_type: type,
+      type,
+      difficulty: item?.difficulty ?? '',
+      marks: item?.marks ?? item?.marks_override ?? 1,
+      order: item?.order ?? 0,
+      exam_question_id: item?.exam_question_id ?? item?.examQuestionId ?? item?.exam_question ?? null,
+    };
+  };
+
+  const loadExamQuestions = async (examId) => {
+    if (!examId) return;
+    try {
+      setPreviewLoading(true);
+      const res = await api.get(`exams/${examId}/questions/`);
+      const items = Array.isArray(res?.data?.questions) ? res.data.questions : [];
+      setExamQuestions(items.map(normalizeExamQuestion));
+      setOrderDirty(false);
+    } catch (error) {
+      console.error('Failed to load exam questions:', error);
+      toast.error('Failed to load exam questions');
+      setExamQuestions([]);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
+  const handleRemoveFromExam = async (questionId) => {
+    if (!selectedExam?.id || !questionId) return;
+    const ok = window.confirm('Remove this question from the exam? (The question will stay in the Question Bank)');
+    if (!ok) return;
+    try {
+      await api.delete(`exams/${selectedExam.id}/questions/${questionId}/`);
+      toast.success('Removed from exam');
+      await loadExamQuestions(selectedExam.id);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to remove question from exam:', error);
+      toast.error('Failed to remove question from exam');
+    }
+  };
+
+  const handleSaveOrder = async () => {
+    if (!selectedExam?.id) return;
+    try {
+      setSavingOrder(true);
+      await api.post(`exams/${selectedExam.id}/questions/reorder/`, {
+        ordered_question_ids: examQuestions.map((q) => q.question_id ?? q.id),
+      });
+      toast.success('Order saved');
+      setOrderDirty(false);
+      await loadExamQuestions(selectedExam.id);
+    } catch (error) {
+      console.error('Failed to save order:', error);
+      toast.error('Failed to save order');
+    } finally {
+      setSavingOrder(false);
     }
   };
 
@@ -332,10 +407,8 @@ const ExamManagerNew = () => {
 
   const openPreviewModal = (exam) => {
     setSelectedExam(exam);
-    // Backend does not provide `question_ids` today; keep preview stable.
-    // If your API later returns exam questions, wire it here.
-    setExamQuestions([]);
     setShowPreviewModal(true);
+    loadExamQuestions(exam?.id);
   };
 
   const openAnalyticsModal = (exam) => {
@@ -412,6 +485,7 @@ const ExamManagerNew = () => {
     items.splice(result.destination.index, 0, reorderedItem);
 
     setExamQuestions(items);
+    setOrderDirty(true);
   };
 
   return (
@@ -951,8 +1025,38 @@ const ExamManagerNew = () => {
           )}
 
           <div>
-            <h4 className="text-lg font-semibold text-white mb-4">Questions</h4>
-            {examQuestions.length === 0 ? (
+            <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+              <h4 className="text-lg font-semibold text-white">Questions</h4>
+              <div className="flex items-center gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => selectedExam && openQuestionModal(selectedExam)}
+                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4 inline mr-1" />
+                  Add
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSaveOrder}
+                  disabled={!orderDirty || savingOrder || previewLoading}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-white rounded-lg border border-purple-500/30 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  title={orderDirty ? 'Save question order' : 'Drag to reorder'}
+                >
+                  <Save className="w-4 h-4 inline mr-1" />
+                  {savingOrder ? 'Saving…' : 'Save order'}
+                </motion.button>
+              </div>
+            </div>
+
+            {previewLoading ? (
+              <div className="premium-card text-center py-8">
+                <div className="h-6 w-44 bg-white/10 rounded mx-auto shimmer" />
+                <p className="text-gray-400 mt-3 text-sm">Loading questions…</p>
+              </div>
+            ) : examQuestions.length === 0 ? (
               <div className="premium-card text-center py-8">
                 <FileQuestion className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-400">No questions added yet</p>
@@ -968,10 +1072,9 @@ const ExamManagerNew = () => {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
-                              {...provided.dragHandleProps}
                               className="premium-card flex gap-4"
                             >
-                              <div className="flex items-center">
+                              <div className="flex items-center" {...provided.dragHandleProps}>
                                 <GripVertical className="w-5 h-5 text-gray-400 cursor-grab active:cursor-grabbing" />
                               </div>
                               <div className="flex-1">
@@ -982,12 +1085,21 @@ const ExamManagerNew = () => {
                                   <span className="px-2 py-1 rounded text-xs font-semibold bg-blue-500/20 text-blue-400">
                                     {question.question_type}
                                   </span>
-                                  <span className="px-2 py-1 rounded text-xs font-semibold bg-yellow-500/20 text-yellow-400">
-                                    {question.difficulty}
-                                  </span>
                                   <span className="text-xs text-gray-400">{question.marks} marks</span>
                                 </div>
                                 <p className="text-white font-medium">{question.question_text}</p>
+                              </div>
+
+                              <div className="flex items-start justify-end">
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleRemoveFromExam(question.question_id ?? question.id)}
+                                  className="px-3 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors"
+                                  title="Remove from exam"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </motion.button>
                               </div>
                             </div>
                           )}

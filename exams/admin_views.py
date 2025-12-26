@@ -3,7 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Avg, Q
-from exams.models import Topic, Question, Exam, Attempt
+from django.db.models import Max
+from exams.models import Topic, Question, Exam, Attempt, ExamQuestion
 from accounts.models import Badge, UserBadge
 
 User = get_user_model()
@@ -11,6 +12,23 @@ User = get_user_model()
 def is_admin(user):
     """Check if user has admin role or is superuser/staff"""
     return user and user.is_authenticated and (user.role == 'ADMIN' or user.is_superuser or user.is_staff)
+
+
+def _can_manage_exams(user):
+    return bool(is_admin(user) or (user and user.is_authenticated and getattr(user, 'role', None) == 'TEACHER'))
+
+
+def _renumber_exam_questions(exam_id):
+    eqs = list(
+        ExamQuestion.objects.filter(exam_id=exam_id).order_by('order', 'id')
+    )
+    changed = []
+    for idx, eq in enumerate(eqs, start=1):
+        if eq.order != idx:
+            eq.order = idx
+            changed.append(eq)
+    if changed:
+        ExamQuestion.objects.bulk_update(changed, ['order'])
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -133,21 +151,143 @@ def admin_analytics(request):
 @permission_classes([IsAuthenticated])
 def add_questions_to_exam(request, exam_id):
     """Add questions to an exam"""
-    if not is_admin(request.user) and request.user.role != 'TEACHER':
+    if not _can_manage_exams(request.user):
         return Response({'detail': 'Admin or Teacher access required'}, status=403)
     
     try:
-        from exams.models import Exam, ExamQuestion
         exam = Exam.objects.get(id=exam_id)
         question_ids = request.data.get('question_ids', [])
-        
-        for idx, q_id in enumerate(question_ids):
-            ExamQuestion.objects.get_or_create(
+
+        if not isinstance(question_ids, list):
+            return Response({'detail': 'question_ids must be a list'}, status=400)
+
+        current_max = (
+            ExamQuestion.objects.filter(exam=exam).aggregate(Max('order')).get('order__max')
+            or 0
+        )
+
+        created_count = 0
+        for idx, q_id in enumerate(question_ids, start=1):
+            _, created = ExamQuestion.objects.get_or_create(
                 exam=exam,
                 question_id=q_id,
-                defaults={'order': idx + 1}
+                defaults={'order': current_max + idx}
             )
-        
-        return Response({'detail': f'Added {len(question_ids)} questions to exam'})
+            if created:
+                created_count += 1
+
+        _renumber_exam_questions(exam.id)
+
+        return Response({'detail': f'Added {created_count} question(s) to exam'})
     except Exam.DoesNotExist:
         return Response({'detail': 'Exam not found'}, status=404)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def exam_questions_list(request, exam_id):
+    """List questions currently attached to an exam (ordered)."""
+    if not _can_manage_exams(request.user):
+        return Response({'detail': 'Admin or Teacher access required'}, status=403)
+    try:
+        exam = Exam.objects.get(id=exam_id)
+    except Exam.DoesNotExist:
+        return Response({'detail': 'Exam not found'}, status=404)
+
+    eqs = (
+        ExamQuestion.objects.filter(exam=exam)
+        .select_related('question')
+        .order_by('order', 'id')
+    )
+    items = []
+    for eq in eqs:
+        q = eq.question
+        items.append(
+            {
+                'exam_question_id': eq.id,
+                'question_id': q.id,
+                'order': eq.order,
+                'type': q.type,
+                'statement': q.statement,
+                'marks': q.marks,
+                'topic_id': q.topic_id,
+                'is_active': q.is_active,
+            }
+        )
+
+    return Response({'exam_id': exam.id, 'questions': items})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def exam_question_remove(request, exam_id, question_id):
+    """Remove a question from an exam (does not delete the question)."""
+    if not _can_manage_exams(request.user):
+        return Response({'detail': 'Admin or Teacher access required'}, status=403)
+    try:
+        Exam.objects.get(id=exam_id)
+    except Exam.DoesNotExist:
+        return Response({'detail': 'Exam not found'}, status=404)
+
+    deleted, _ = ExamQuestion.objects.filter(exam_id=exam_id, question_id=question_id).delete()
+    if not deleted:
+        return Response({'detail': 'Question is not attached to this exam'}, status=404)
+
+    _renumber_exam_questions(exam_id)
+    return Response({'detail': 'Removed question from exam'})
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def exam_questions_reorder(request, exam_id):
+    """Reorder exam questions. Accepts ordered_question_ids (preferred) or question_ids."""
+    if not _can_manage_exams(request.user):
+        return Response({'detail': 'Admin or Teacher access required'}, status=403)
+    try:
+        Exam.objects.get(id=exam_id)
+    except Exam.DoesNotExist:
+        return Response({'detail': 'Exam not found'}, status=404)
+
+    ordered = request.data.get('ordered_question_ids', None)
+    if ordered is None:
+        ordered = request.data.get('question_ids', [])
+
+    if not isinstance(ordered, list):
+        return Response({'detail': 'ordered_question_ids must be a list'}, status=400)
+
+    ordered_ids = [int(x) for x in ordered if str(x).strip().isdigit()]
+    if not ordered_ids:
+        return Response({'detail': 'No question ids provided'}, status=400)
+
+    eqs = list(
+        ExamQuestion.objects.filter(exam_id=exam_id).order_by('order', 'id')
+    )
+    eq_by_qid = {int(eq.question_id): eq for eq in eqs}
+
+    missing = [qid for qid in ordered_ids if qid not in eq_by_qid]
+    if missing:
+        return Response({'detail': 'Some questions are not attached to this exam', 'missing': missing}, status=400)
+
+    # Set explicit order for provided ids.
+    updates = []
+    next_order = 1
+    seen = set()
+    for qid in ordered_ids:
+        eq = eq_by_qid[qid]
+        eq.order = next_order
+        updates.append(eq)
+        next_order += 1
+        seen.add(qid)
+
+    # Append any remaining exam questions not included in request.
+    for eq in eqs:
+        qid = int(eq.question_id)
+        if qid in seen:
+            continue
+        eq.order = next_order
+        updates.append(eq)
+        next_order += 1
+
+    ExamQuestion.objects.bulk_update(updates, ['order'])
+    _renumber_exam_questions(exam_id)
+    return Response({'detail': 'Reordered questions', 'count': len(updates)})

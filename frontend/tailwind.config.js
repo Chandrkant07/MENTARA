@@ -8,6 +8,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Semantic tokens (backed by CSS variables) so we can switch light/dark
+        // without rewriting component classNames.
+        bg: 'rgb(var(--c-bg) / <alpha-value>)',
+        surface: 'rgb(var(--c-surface) / <alpha-value>)',
+        elevated: 'rgb(var(--c-elevated) / <alpha-value>)',
+        text: 'rgb(var(--c-text) / <alpha-value>)',
+        'text-secondary': 'rgb(var(--c-text-secondary) / <alpha-value>)',
+        accent: 'rgb(var(--c-accent) / <alpha-value>)',
+
         // Dark theme colors - Apple-inspired
         dark: {
           base: '#0B0B0D',
@@ -18,6 +27,7 @@ module.exports = {
         },
         // Primary accent - Icy blue
         primary: {
+          DEFAULT: '#7CE7FF',
           50: '#E0F7FF',
           100: '#B8EEFF',
           200: '#7CE7FF',
@@ -31,6 +41,7 @@ module.exports = {
         },
         // Secondary accent - Mint green
         secondary: {
+          DEFAULT: '#A6FFCB',
           50: '#E5FFF4',
           100: '#B8FFE3',
           200: '#A6FFCB',

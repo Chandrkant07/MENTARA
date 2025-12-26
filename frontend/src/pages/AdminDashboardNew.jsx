@@ -278,7 +278,7 @@ const AdminDashboardNew = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0B0F]">
+    <div className="min-h-screen bg-bg">
       {/* Top Navigation */}
       <motion.nav
         initial={{ y: -100 }}
@@ -289,13 +289,18 @@ const AdminDashboardNew = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors lg:hidden"
+              className="p-2 rounded-lg hover:bg-white/10 transition-colors lg:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
             >
               {sidebarOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}
             </button>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                <Sparkles className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shadow-lg overflow-hidden">
+                <img
+                  src="/branding/mentara-logo-transparent.png"
+                  alt="Mentara"
+                  className="w-8 h-8 object-contain drop-shadow-sm"
+                  loading="eager"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">Mentara Admin</h1>
@@ -306,23 +311,23 @@ const AdminDashboardNew = () => {
 
           <div className="flex items-center gap-4">
             {/* Search Bar */}
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:border-purple-500/50 transition-colors">
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:border-purple-500/50 transition-colors focus-within:border-purple-500/60 focus-within:ring-2 focus-within:ring-purple-500/20">
               <Search className="w-4 h-4 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search anything..."
-                className="bg-transparent border-none outline-none text-white placeholder-gray-400 w-64"
+                className="bg-transparent border-none outline-none text-white placeholder-gray-400 w-64 focus:outline-none"
               />
             </div>
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-lg hover:bg-white/10 transition-colors">
+            <button className="relative p-2 rounded-lg hover:bg-white/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20">
               <Bell className="w-5 h-5 text-gray-400" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </button>
 
             {/* Profile */}
-            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+            <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20" tabIndex={0}>
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <span className="text-white font-bold text-sm">{user?.username?.charAt(0).toUpperCase()}</span>
               </div>
@@ -355,7 +360,7 @@ const AdminDashboardNew = () => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
                     onClick={() => setActiveSection(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20 ${
                       activeSection === item.id
                         ? 'bg-gradient-to-r ' + item.gradient + ' text-white shadow-lg'
                         : 'text-gray-400 hover:bg-white/5 hover:text-white'
@@ -375,7 +380,7 @@ const AdminDashboardNew = () => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
                 onClick={logout}
-                className="w-full mt-6 flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all"
+                className="w-full mt-6 flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
               >
                 <X className="w-5 h-5" />
                 <span className="font-semibold">Logout</span>

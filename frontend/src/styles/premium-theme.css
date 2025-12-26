@@ -343,10 +343,18 @@
   color: white;
 }
 
-/* Focus Styles */
-*:focus-visible {
-  outline: 2px solid var(--primary-purple);
-  outline-offset: 2px;
+/* Focus Styles (keyboard only, interactive elements) */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus {
+  outline: none;
+}
+
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}
+
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
 }
 
 /* Stat Card */

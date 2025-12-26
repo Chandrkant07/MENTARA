@@ -126,7 +126,7 @@ export default function LaunchBanner() {
                       <button
                         type="button"
                         onClick={close}
-                        className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold border border-white/10"
+                        className="px-5 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold border border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200/30 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-base"
                       >
                         Not now
                       </button>
@@ -140,7 +140,7 @@ export default function LaunchBanner() {
                   <button
                     type="button"
                     onClick={close}
-                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-200/30 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-base"
                     aria-label="Dismiss"
                     title="Close"
                   >
