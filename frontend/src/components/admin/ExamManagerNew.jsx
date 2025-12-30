@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
+import HierarchyTopicSelector from '../ui/HierarchyTopicSelector';
 // Prefer maintained fork; keep compat by installing only one DnD lib.
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
@@ -79,6 +80,7 @@ const ExamManagerNew = () => {
   const [exams, setExams] = useState([]);
   const [questions, setQuestions] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [topicMeta, setTopicMeta] = useState({ isIb: false, isComplete: false, pathLabel: '' });
   const [loading, setLoading] = useState(true);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [orderDirty, setOrderDirty] = useState(false);
@@ -175,6 +177,8 @@ const ExamManagerNew = () => {
     const paperNumberParsed = Number.parseInt(String(paperNumberRaw), 10);
     const paper_number = Number.isFinite(paperNumberParsed) ? paperNumberParsed : null;
 
+    const isIb = Boolean(topicMeta?.isIb);
+
     // UI `status` is mapped onto backend (visibility, is_active). Backend doesn't persist `status`/`scheduled_date`.
     let is_active = true;
     let visibility = 'PUBLIC';
@@ -202,8 +206,8 @@ const ExamManagerNew = () => {
       title: data.title,
       description: data.description,
       topic: data.topic,
-      level: data.level || null,
-      paper_number,
+      level: isIb ? (data.level || null) : null,
+      paper_number: isIb ? paper_number : null,
       duration_seconds,
       total_marks: data.total_marks,
       passing_marks: data.passing_marks,
@@ -217,6 +221,14 @@ const ExamManagerNew = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
+      if (!formData.topic) {
+        toast.error('Please select a topic');
+        return;
+      }
+      if (formData.topic && topicMeta && topicMeta.isComplete === false) {
+        toast.error('Please select the deepest sub-topic (complete the full hierarchy).');
+        return;
+      }
       const payload = backendPayloadFromForm(formData);
       await api.post('exams/', payload);
       toast.success('✨ Exam created successfully!');
@@ -234,6 +246,14 @@ const ExamManagerNew = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      if (!formData.topic) {
+        toast.error('Please select a topic');
+        return;
+      }
+      if (formData.topic && topicMeta && topicMeta.isComplete === false) {
+        toast.error('Please select the deepest sub-topic (complete the full hierarchy).');
+        return;
+      }
       const payload = backendPayloadFromForm(formData);
       await api.put(`exams/${selectedExam.id}/`, payload);
       toast.success('✨ Exam updated successfully!');
@@ -753,49 +773,63 @@ const ExamManagerNew = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-2">
               Topic *
             </label>
-            <select
+            <HierarchyTopicSelector
               required
               value={formData.topic}
-              onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            >
-              <option value="">Select a topic</option>
-              {topics.map((topic) => (
-                <option key={topic.id} value={topic.id}>{topic.name}</option>
-              ))}
-            </select>
+              onChange={(topicId) => setFormData({ ...formData, topic: topicId })}
+              onMetaChange={(meta) => {
+                setTopicMeta(meta);
+                if (meta && meta.isIb === false) {
+                  setFormData((p) => ({ ...p, level: '', paper_number: '' }));
+                }
+              }}
+              className="mt-2"
+            />
+            {formData.topic && topicMeta?.isComplete === false && (
+              <div className="mt-2 text-xs text-amber-300">
+                Please select the deepest sub-topic (complete the full hierarchy).
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
-              Level (HL/SL)
-            </label>
-            <select
-              value={formData.level}
-              onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            >
-              <option value="">Not set</option>
-              <option value="HL">HL</option>
-              <option value="SL">SL</option>
-            </select>
-          </div>
+          {topicMeta?.isIb ? (
+            <>
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  Level (HL/SL)
+                </label>
+                <select
+                  value={formData.level}
+                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                >
+                  <option value="">Not set</option>
+                  <option value="HL">HL</option>
+                  <option value="SL">SL</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
-              Paper (1/2/3)
-            </label>
-            <select
-              value={formData.paper_number}
-              onChange={(e) => setFormData({ ...formData, paper_number: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            >
-              <option value="">Not set</option>
-              <option value="1">Paper 1</option>
-              <option value="2">Paper 2</option>
-              <option value="3">Paper 3</option>
-            </select>
-          </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                  Paper (1/2/3)
+                </label>
+                <select
+                  value={formData.paper_number}
+                  onChange={(e) => setFormData({ ...formData, paper_number: e.target.value })}
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                >
+                  <option value="">Not set</option>
+                  <option value="1">Paper 1</option>
+                  <option value="2">Paper 2</option>
+                  <option value="3">Paper 3</option>
+                </select>
+              </div>
+            </>
+          ) : (
+            <div className="md:col-span-2 text-xs text-gray-400">
+              This curriculum doesn’t use IB Level/Paper fields.
+            </div>
+          )}
 
           <div className="md:col-span-2">
             <label className="block text-sm font-semibold text-gray-300 mb-2">

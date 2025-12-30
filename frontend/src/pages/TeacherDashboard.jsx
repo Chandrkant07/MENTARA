@@ -65,6 +65,23 @@ function TeacherDashboard() {
   const [expanded, setExpanded] = useState(() => new Set());
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [paperFilters, setPaperFilters] = useState({ level: '', paper_number: '' });
+    const isIbCurriculum = (c) => {
+      const s = String(c?.slug || c?.name || '').toLowerCase();
+      return s === 'ib' || s.includes('international baccalaureate') || s.startsWith('ib');
+    };
+
+    const selectedCurriculum = useMemo(
+      () => (curriculums || []).find((c) => String(c.id) === String(selectedCurriculumId)) || null,
+      [curriculums, selectedCurriculumId]
+    );
+
+    const selectedIsIb = useMemo(() => isIbCurriculum(selectedCurriculum), [selectedCurriculum]);
+
+    useEffect(() => {
+      if (!selectedIsIb) {
+        setPaperFilters({ level: '', paper_number: '' });
+      }
+    }, [selectedIsIb]);
   const [paperAttemptsLoading, setPaperAttemptsLoading] = useState(false);
   const [paperAttemptRows, setPaperAttemptRows] = useState([]);
 
@@ -131,8 +148,8 @@ function TeacherDashboard() {
         const params = new URLSearchParams();
         params.set('topic', String(selectedTopic.id));
         params.set('completed', '1');
-        if (paperFilters.level) params.set('level', paperFilters.level);
-        if (paperFilters.paper_number) params.set('paper_number', paperFilters.paper_number);
+        if (selectedIsIb && paperFilters.level) params.set('level', paperFilters.level);
+        if (selectedIsIb && paperFilters.paper_number) params.set('paper_number', paperFilters.paper_number);
 
         const res = await fetch(`${BASE_API}/attempts/?${params.toString()}`, { headers: authHeaders() });
         const data = await safeJson(res);
@@ -539,28 +556,32 @@ function TeacherDashboard() {
                     )}
                   </select>
 
-                  <select
-                    className="input text-sm min-w-[140px]"
-                    value={paperFilters.level}
-                    onChange={(e) => setPaperFilters((p) => ({ ...p, level: e.target.value }))}
-                    aria-label="Select level"
-                  >
-                    <option value="">All levels</option>
-                    <option value="SL">SL</option>
-                    <option value="HL">HL</option>
-                  </select>
+                  {selectedIsIb && (
+                    <>
+                      <select
+                        className="input text-sm min-w-[140px]"
+                        value={paperFilters.level}
+                        onChange={(e) => setPaperFilters((p) => ({ ...p, level: e.target.value }))}
+                        aria-label="Select level"
+                      >
+                        <option value="">All levels</option>
+                        <option value="SL">SL</option>
+                        <option value="HL">HL</option>
+                      </select>
 
-                  <select
-                    className="input text-sm min-w-[160px]"
-                    value={paperFilters.paper_number}
-                    onChange={(e) => setPaperFilters((p) => ({ ...p, paper_number: e.target.value }))}
-                    aria-label="Select paper number"
-                  >
-                    <option value="">All papers</option>
-                    <option value="1">Paper 1</option>
-                    <option value="2">Paper 2</option>
-                    <option value="3">Paper 3</option>
-                  </select>
+                      <select
+                        className="input text-sm min-w-[160px]"
+                        value={paperFilters.paper_number}
+                        onChange={(e) => setPaperFilters((p) => ({ ...p, paper_number: e.target.value }))}
+                        aria-label="Select paper number"
+                      >
+                        <option value="">All papers</option>
+                        <option value="1">Paper 1</option>
+                        <option value="2">Paper 2</option>
+                        <option value="3">Paper 3</option>
+                      </select>
+                    </>
+                  )}
                 </div>
               </div>
 

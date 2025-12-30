@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 const TopicTreeView = React.memo(function TopicTreeView({
   loading,
@@ -206,6 +207,9 @@ const Modal = ({ show, onClose, onSubmit, title, children }) => (
 );
 
 const TopicManagerNew = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN' || user?.is_staff;
+
   const [topics, setTopics] = useState([]);
   const [curriculums, setCurriculums] = useState([]);
   const [selectedCurriculumId, setSelectedCurriculumId] = useState('');
@@ -283,6 +287,10 @@ const TopicManagerNew = () => {
 
   const handleCreateCurriculum = async (e) => {
     e.preventDefault();
+    if (!isAdmin) {
+      toast.error('Only admins can create curriculums');
+      return;
+    }
     try {
       const payload = {
         name: curriculumForm.name,
@@ -481,14 +489,16 @@ const TopicManagerNew = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowCreateCurriculumModal(true)}
-            className="px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
-          >
-            + Curriculum
-          </motion.button>
+          {isAdmin && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCreateCurriculumModal(true)}
+              className="px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+            >
+              + Curriculum
+            </motion.button>
+          )}
 
           <select
             value={selectedCurriculumId}
@@ -647,35 +657,37 @@ const TopicManagerNew = () => {
         </div>
       </Modal>
 
-      {/* Create Curriculum Modal */}
-      <Modal
-        show={showCreateCurriculumModal}
-        onClose={() => setShowCreateCurriculumModal(false)}
-        onSubmit={handleCreateCurriculum}
-        title="Create Curriculum"
-      >
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">Curriculum Name *</label>
-          <input
-            type="text"
-            required
-            value={curriculumForm.name}
-            onChange={(e) => setCurriculumForm((prev) => ({ ...prev, name: e.target.value }))}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            placeholder="e.g., IB"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
-          <textarea
-            value={curriculumForm.description}
-            onChange={(e) => setCurriculumForm((prev) => ({ ...prev, description: e.target.value }))}
-            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all resize-none"
-            rows="3"
-            placeholder="Optional"
-          />
-        </div>
-      </Modal>
+      {/* Create Curriculum Modal (Admin only) */}
+      {isAdmin && (
+        <Modal
+          show={showCreateCurriculumModal}
+          onClose={() => setShowCreateCurriculumModal(false)}
+          onSubmit={handleCreateCurriculum}
+          title="Create Curriculum"
+        >
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">Curriculum Name *</label>
+            <input
+              type="text"
+              required
+              value={curriculumForm.name}
+              onChange={(e) => setCurriculumForm((prev) => ({ ...prev, name: e.target.value }))}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+              placeholder="e.g., IB"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">Description</label>
+            <textarea
+              value={curriculumForm.description}
+              onChange={(e) => setCurriculumForm((prev) => ({ ...prev, description: e.target.value }))}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all resize-none"
+              rows="3"
+              placeholder="Optional"
+            />
+          </div>
+        </Modal>
+      )}
 
       {/* Edit Modal */}
       <Modal

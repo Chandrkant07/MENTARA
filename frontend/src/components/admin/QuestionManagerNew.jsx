@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
+import HierarchyTopicSelector from '../ui/HierarchyTopicSelector';
 
 const Modal = ({ show, onClose, onSubmit, title, children, size = 'lg' }) => (
   <AnimatePresence>
@@ -70,6 +71,7 @@ const Modal = ({ show, onClose, onSubmit, title, children, size = 'lg' }) => (
 const QuestionManagerNew = () => {
   const [questions, setQuestions] = useState([]);
   const [topics, setTopics] = useState([]);
+  const [topicMeta, setTopicMeta] = useState({ pathLabel: '', isComplete: false });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDifficulty, setFilterDifficulty] = useState('all');
@@ -218,6 +220,14 @@ const QuestionManagerNew = () => {
     e.preventDefault();
     try {
       const formDataToSend = buildQuestionFormData(formData);
+      if (!formData.topic) {
+        toast.error('Please select a topic');
+        return;
+      }
+      if (formData.topic && topicMeta && topicMeta.isComplete === false) {
+        toast.error('Please select the deepest sub-topic (complete the full hierarchy).');
+        return;
+      }
       await api.post('questions/', formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -237,6 +247,14 @@ const QuestionManagerNew = () => {
     e.preventDefault();
     try {
       const formDataToSend = buildQuestionFormData(formData);
+      if (!formData.topic) {
+        toast.error('Please select a topic');
+        return;
+      }
+      if (formData.topic && topicMeta && topicMeta.isComplete === false) {
+        toast.error('Please select the deepest sub-topic (complete the full hierarchy).');
+        return;
+      }
       await api.put(`questions/${selectedQuestion.id}/`, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -713,17 +731,18 @@ const QuestionManagerNew = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-2">
               Topic *
             </label>
-            <select
+            <HierarchyTopicSelector
               required
               value={formData.topic}
-              onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            >
-              <option value="">Select a topic</option>
-              {topics.map(topic => (
-                <option key={topic.id} value={topic.id}>{topic.name}</option>
-              ))}
-            </select>
+              onChange={(topicId) => setFormData({ ...formData, topic: topicId })}
+              onMetaChange={(meta) => setTopicMeta(meta)}
+              className="mt-2"
+            />
+            {formData.topic && !topicMeta?.isComplete && (
+              <div className="mt-2 text-xs text-amber-300">
+                Please select the deepest sub-topic (complete the full hierarchy).
+              </div>
+            )}
           </div>
 
           {(formData.question_type === 'MCQ' || formData.question_type === 'MULTI') && (

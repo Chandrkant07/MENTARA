@@ -28,6 +28,15 @@ class IsAdminOrTeacher(permissions.BasePermission):
         )
 
 
+class IsAdminOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        u = request.user
+        if not (u and u.is_authenticated):
+            return False
+        role = getattr(u, 'role', None)
+        return bool(u.is_staff or role == 'ADMIN')
+
+
 def _is_teacher_or_admin(user):
     if not (user and user.is_authenticated):
         return False
@@ -163,7 +172,7 @@ class CurriculumViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.request.method in ('GET', 'HEAD', 'OPTIONS'):
             return [permissions.AllowAny()]
-        return [IsAdminOrTeacher()]
+        return [IsAdminOnly()]
 
     @action(detail=True, methods=['get'], permission_classes=[permissions.AllowAny])
     def tree(self, request, pk=None):
