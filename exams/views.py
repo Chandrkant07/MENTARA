@@ -5,7 +5,7 @@ from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
-from django.db.models import Avg, Count, Max, Q
+from django.db.models import Avg, Count, Exists, Max, OuterRef, Q
 from django.utils import timezone
 import random
 from datetime import timedelta
@@ -590,13 +590,33 @@ def bulk_create_questions(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def my_attempts(request):
-    qs = Attempt.objects.filter(user=request.user).select_related('exam').order_by('-created_at')
+    needs_grading_sq = Response.objects.filter(
+        attempt_id=OuterRef('pk'),
+        question__type='STRUCT',
+        teacher_mark__isnull=True,
+    )
+    requires_teacher_grading_sq = Response.objects.filter(
+        attempt_id=OuterRef('pk'),
+        question__type='STRUCT',
+    )
+
+    qs = (
+        Attempt.objects.filter(user=request.user)
+        .select_related('exam')
+        .annotate(
+            needs_grading=Exists(needs_grading_sq),
+            requires_teacher_grading=Exists(requires_teacher_grading_sq),
+        )
+        .order_by('-created_at')
+    )
     data = [
         {
             'id': a.id,
             'exam_id': a.exam_id,
             'exam_title': a.exam.title,
             'status': a.status,
+            'requires_teacher_grading': bool(getattr(a, 'requires_teacher_grading', False)),
+            'needs_grading': bool(getattr(a, 'needs_grading', False)),
             # Keep legacy key for compatibility
             'score': float(a.total_score or 0),
             'percentage': float(a.percentage or 0),
@@ -664,9 +684,15 @@ def review_attempt(request, attempt_id):
     res = []
     total_marks = 0
     teacher_remarks = {}
+    requires_teacher_grading = False
+    needs_grading = False
     if isinstance(attempt.metadata, dict):
         teacher_remarks = attempt.metadata.get('teacher_remarks', {}) or {}
     for r in Response.objects.filter(attempt=attempt).select_related('question'):
+        if getattr(r.question, 'type', None) == 'STRUCT':
+            requires_teacher_grading = True
+            if r.teacher_mark is None:
+                needs_grading = True
         q_marks = r.teacher_mark if r.teacher_mark is not None else (r.question.marks if r.correct else 0)
         total_marks += r.question.marks
         res.append({
@@ -686,6 +712,8 @@ def review_attempt(request, attempt_id):
         'score': attempt.total_score, 
         'total': total_marks,
         'percentage': attempt.percentage,
+        'requires_teacher_grading': requires_teacher_grading,
+        'needs_grading': needs_grading,
         'exam_title': attempt.exam.title,
         'duration_seconds': attempt.duration_seconds
     }, status=status.HTTP_200_OK)

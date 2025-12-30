@@ -142,21 +142,37 @@ class AttemptSerializer(serializers.ModelSerializer):
     user = UserMinimalSerializer(read_only=True)
     exam = ExamSerializer(read_only=True)
     exam_id = serializers.IntegerField(write_only=True)
+    requires_teacher_grading = serializers.SerializerMethodField()
+    needs_grading = serializers.SerializerMethodField()
     
     class Meta:
         model = Attempt
         fields = '__all__'
         read_only_fields = ['total_score', 'percentage', 'rank', 'percentile']
 
+    def get_requires_teacher_grading(self, obj):
+        return obj.responses.filter(question__type='STRUCT').exists()
+
+    def get_needs_grading(self, obj):
+        return obj.responses.filter(question__type='STRUCT', teacher_mark__isnull=True).exists()
+
 
 class AttemptDetailSerializer(serializers.ModelSerializer):
     user = UserMinimalSerializer(read_only=True)
     exam = ExamDetailSerializer(read_only=True)
     responses = ResponseSerializer(many=True, read_only=True)
+    requires_teacher_grading = serializers.SerializerMethodField()
+    needs_grading = serializers.SerializerMethodField()
     
     class Meta:
         model = Attempt
         fields = '__all__'
+
+    def get_requires_teacher_grading(self, obj):
+        return obj.responses.filter(question__type='STRUCT').exists()
+
+    def get_needs_grading(self, obj):
+        return obj.responses.filter(question__type='STRUCT', teacher_mark__isnull=True).exists()
 
 
 class AttemptStartSerializer(serializers.Serializer):

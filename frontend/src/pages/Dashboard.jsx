@@ -102,6 +102,11 @@ const Dashboard = () => {
     [dashboardData.recentAttempts]
   );
 
+  const gradedSubmittedAttempts = useMemo(
+    () => submittedAttempts.filter((a) => !a?.needs_grading),
+    [submittedAttempts]
+  );
+
   const latestAttempt = useMemo(() => {
     const attempts = (dashboardData.recentAttempts || []).filter(Boolean);
     if (!attempts.length) return null;
@@ -136,11 +141,11 @@ const Dashboard = () => {
   }, [weeklyGoal]);
 
   const avgScore = useMemo(() => {
-    const scores = submittedAttempts.map((a) => Number(a.percentage ?? 0)).filter((n) => Number.isFinite(n));
+    const scores = gradedSubmittedAttempts.map((a) => Number(a.percentage ?? 0)).filter((n) => Number.isFinite(n));
     if (!scores.length) return 0;
     const sum = scores.reduce((acc, v) => acc + v, 0);
     return Math.round((sum / scores.length) * 10) / 10;
-  }, [submittedAttempts]);
+  }, [gradedSubmittedAttempts]);
 
   const streak = useMemo(() => {
     const dates = submittedAttempts
@@ -212,6 +217,7 @@ const Dashboard = () => {
 
     for (const attempt of submittedAttempts) {
       if (!attempt?.started_at) continue;
+      if (attempt?.needs_grading) continue;
       const key = new Date(attempt.started_at).toDateString();
       const idx = buckets.findIndex((b) => b.key === key);
       if (idx >= 0) buckets[idx].values.push(Number(attempt.percentage ?? 0));
@@ -480,7 +486,11 @@ const Dashboard = () => {
                       {(latestAttempt.status === 'submitted' || latestAttempt.status === 'timedout') && (
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface/40 border border-elevated/50">
                           <TrendingUp className="w-4 h-4 text-primary" />
-                          {Number.isFinite(Number(latestAttempt.percentage)) ? `${Math.round(Number(latestAttempt.percentage))}% score` : 'Results ready'}
+                          {latestAttempt?.needs_grading
+                            ? 'Pending teacher grading'
+                            : (Number.isFinite(Number(latestAttempt.percentage))
+                              ? `${Math.round(Number(latestAttempt.percentage))}% score`
+                              : 'Results ready')}
                         </span>
                       )}
                     </div>
@@ -706,7 +716,9 @@ const Dashboard = () => {
                     >
                       <div className="flex items-center justify-between">
                         <div className="font-semibold text-text">{a.exam_title}</div>
-                        <div className="text-sm font-semibold text-text">{Math.round(Number(a.percentage ?? 0))}%</div>
+                        <div className="text-sm font-semibold text-text">
+                          {a?.needs_grading ? 'Pending grading' : `${Math.round(Number(a.percentage ?? 0))}%`}
+                        </div>
                       </div>
                       <div className="text-xs text-text-secondary mt-1">
                         {a.started_at ? new Date(a.started_at).toLocaleString() : '—'}

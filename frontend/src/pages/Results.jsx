@@ -19,6 +19,8 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState(null);
   const [evaluation, setEvaluation] = useState(null);
+  const [needsGrading, setNeedsGrading] = useState(false);
+  const [requiresTeacherGrading, setRequiresTeacherGrading] = useState(false);
 
   useEffect(() => {
     loadResults();
@@ -35,12 +37,23 @@ const Results = () => {
       // Calculate results
       const attempt = attemptRes.data;
       const review = reviewRes.data;
+
+      const requiresTG = Boolean(review?.requires_teacher_grading ?? attempt?.requires_teacher_grading);
+      const needsTG = Boolean(review?.needs_grading ?? attempt?.needs_grading);
+      setRequiresTeacherGrading(requiresTG);
+      setNeedsGrading(needsTG);
       
       const totalQuestions = review.responses?.length || 0;
       const correctAnswers = review.responses?.filter(r => r.correct).length || 0;
       const incorrectAnswers = review.responses?.filter(r => !r.correct && r.answer).length || 0;
       const unanswered = totalQuestions - correctAnswers - incorrectAnswers;
-      const scorePercent = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+      // Use marks-based percentage from backend (works for both MCQ and teacher-graded STRUCT).
+      const scorePercent = Number.isFinite(Number(review?.percentage))
+        ? Math.round(Number(review.percentage))
+        : (Number.isFinite(Number(attempt?.percentage))
+          ? Math.round(Number(attempt.percentage))
+          : (review?.total ? Math.round((Number(review?.score || 0) / Number(review.total)) * 100) : 0));
       
       setResult({
         score: scorePercent,
@@ -94,6 +107,54 @@ const Results = () => {
   };
 
   const gradeInfo = getGrade(scorePercent);
+
+  if (requiresTeacherGrading && needsGrading) {
+    return (
+      <AppShell
+        brandTitle="Mentara"
+        brandSubtitle="Results"
+        nav={<StudentNav active="dashboard" />}
+        right={(
+          <button onClick={() => navigate('/dashboard')} className="btn-secondary text-sm">
+            <Home className="w-4 h-4 mr-2" />
+            Back
+          </button>
+        )}
+        containerClassName="max-w-3xl"
+        mainClassName="py-12"
+      >
+        <div className="card-elevated relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+          <div className="relative z-10 p-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/20 mb-4">
+              <Clock className="w-4 h-4" />
+              <span className="font-semibold">Submitted — waiting for teacher grading</span>
+            </div>
+            <h2 className="text-2xl font-bold text-text mb-2">Results will appear once graded</h2>
+            <p className="text-text-secondary">
+              Your answers were submitted successfully for <span className="font-semibold text-text">{result?.exam_title}</span>. A teacher will evaluate your
+              structured answers and publish the final score.
+            </p>
+
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => navigate(`/attempt/${attemptId}/review`)}
+                className="btn-secondary w-full sm:w-auto"
+              >
+                Review Answers
+              </button>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="btn-primary w-full sm:w-auto"
+              >
+                Go to Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell
