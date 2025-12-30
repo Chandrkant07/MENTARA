@@ -276,12 +276,48 @@ const TopicManagerNew = () => {
       const data = response?.data;
       const list = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : [];
       setCurriculums(list);
+      const prev = selectedCurriculumId;
       if (list.length > 0) {
-        setSelectedCurriculumId(String(list[0].id));
+        const keep = prev && list.some((c) => String(c.id) === String(prev));
+        setSelectedCurriculumId(keep ? String(prev) : String(list[0].id));
+      } else {
+        setSelectedCurriculumId('');
       }
     } catch (error) {
       console.error('Failed to fetch curriculums:', error);
       setCurriculums([]);
+      setSelectedCurriculumId('');
+    }
+  };
+
+  const handleArchiveCurriculum = async () => {
+    if (!isAdmin) {
+      toast.error('Only admins can delete curriculums');
+      return;
+    }
+    if (!selectedCurriculumId) {
+      toast.error('Select a curriculum first');
+      return;
+    }
+
+    const curriculum = curriculums.find((c) => String(c.id) === String(selectedCurriculumId));
+    const name = curriculum?.name || `#${selectedCurriculumId}`;
+    const ok = window.confirm(
+      `Archive curriculum "${name}"?\n\nThis will hide it from dropdowns, but will NOT delete historical exams/attempts.`
+    );
+    if (!ok) return;
+
+    try {
+      toast.loading('Archiving curriculum…', { id: 'archive-curriculum' });
+      await api.delete(`curriculums/${selectedCurriculumId}/`);
+      toast.success('Curriculum archived', { id: 'archive-curriculum' });
+      await fetchCurriculums();
+      await fetchTopics();
+    } catch (error) {
+      console.error('Failed to archive curriculum:', error);
+      const data = error.response?.data;
+      const detail = data?.detail || (data ? JSON.stringify(data) : null);
+      toast.error(detail || 'Failed to archive curriculum', { id: 'archive-curriculum' });
     }
   };
 
@@ -517,6 +553,20 @@ const TopicManagerNew = () => {
               ))
             )}
           </select>
+
+          {isAdmin && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleArchiveCurriculum}
+              disabled={!selectedCurriculumId}
+              title={!selectedCurriculumId ? 'Select a curriculum first' : 'Archive this curriculum'}
+              className="p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Archive curriculum"
+            >
+              <Trash2 className="w-5 h-5" />
+            </motion.button>
+          )}
 
           <motion.button
             whileHover={{ scale: 1.05 }}

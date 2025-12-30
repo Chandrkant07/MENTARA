@@ -44,7 +44,7 @@ def _is_teacher_or_admin(user):
     return bool(user.is_staff or role in ('ADMIN', 'TEACHER') or user.groups.filter(name__iexact='Teachers').exists())
 
 class TopicViewSet(viewsets.ModelViewSet):
-    queryset = Topic.objects.filter(is_active=True)
+    queryset = Topic.objects.filter(is_active=True).filter(Q(curriculum__isnull=True) | Q(curriculum__is_active=True))
     serializer_class = TopicSerializer
 
     def get_queryset(self):
@@ -181,6 +181,25 @@ class CurriculumViewSet(viewsets.ModelViewSet):
         roots = Topic.objects.filter(is_active=True, curriculum=curriculum, parent__isnull=True).select_related('curriculum')
         data = TopicSerializer(roots, many=True).data
         return DRFResponse({'curriculum': CurriculumSerializer(curriculum).data, 'roots': data})
+
+    def destroy(self, request, *args, **kwargs):
+        """Soft-delete (archive) curriculums.
+
+        Hard-deleting is unsafe because Topics reference Curriculum via PROTECT.
+        Archiving removes it from active lists while preserving referential integrity.
+        """
+        instance = self.get_object()
+        if getattr(instance, 'is_active', True):
+            instance.is_active = False
+            instance.save(update_fields=['is_active'])
+        return DRFResponse(
+            {
+                'detail': 'Curriculum archived successfully.',
+                'archived': True,
+                'id': instance.id,
+            },
+            status=status.HTTP_200_OK,
+        )
 
 class AttemptViewSet(viewsets.ModelViewSet):
     queryset = Attempt.objects.all()
