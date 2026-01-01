@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Code2, GraduationCap, PenTool, Rocket, ShieldCheck, Sparkles } from 'lucide-react';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Team() {
   const members = [
@@ -40,8 +41,8 @@ export default function Team() {
       icon: ShieldCheck,
     },
     {
-      title: 'Premium UX, not clutter',
-      desc: 'Dark, glassy, fast — designed like modern SaaS that clients love.',
+      title: 'Clarity over clutter',
+      desc: 'A clean UI that supports workflows and stays fast under real usage.',
       icon: Sparkles,
     },
   ];
@@ -65,7 +66,7 @@ export default function Team() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              A small, focused team with one goal: a premium education product that clients instantly trust.
+              A small, focused team with one goal: a stable exam platform that institutes can deploy with confidence.
             </motion.p>
 
             <div className="mt-8 grid sm:grid-cols-3 gap-4">
@@ -158,13 +159,13 @@ export default function Team() {
           <div className="mt-10 glass-card p-6">
             <div className="text-white font-bold text-lg">Why clients trust Mentara</div>
             <div className="mt-2 text-gray-400">
-              A premium look is not enough — the product must feel stable, consistent, and ready to deploy.
+              A good UI is not enough — the product must be consistent, exam-safe, and ready to operate day-to-day.
             </div>
             <div className="mt-5 grid md:grid-cols-3 gap-4">
               {[
-                { t: 'Consistent UI system', d: 'Same premium components across marketing + dashboards.' },
                 { t: 'Reliable workflows', d: 'Admin → teacher → student experiences stay connected.' },
-                { t: 'Performance mindset', d: 'Fast navigation, clean states, and practical analytics.' },
+                { t: 'Exam integrity', d: 'Attempts and timing are preserved with resume-safe flows.' },
+                { t: 'Actionable analytics', d: 'Clear results, topic breakdowns, and grading-aware outcomes.' },
               ].map((x) => (
                 <div key={x.t} className="premium-card">
                   <div className="text-white font-semibold">{x.t}</div>
@@ -175,6 +176,8 @@ export default function Team() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
     </MarketingPageShell>
   );
 }

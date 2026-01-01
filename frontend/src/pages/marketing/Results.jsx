@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, Crown, Radar, Sparkles } from 'lucide-react';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Results() {
   const stats = [
@@ -30,8 +31,8 @@ export default function Results() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              Show your client a platform that looks like modern fintech — but for education.
-              Clean cards, clear insights, and fast performance.
+              Track progress the way students and teachers actually need: topic-wise performance,
+              attempt history, rankings, and structured answers that can be reviewed by a teacher.
             </motion.p>
 
             <div className="mt-8 grid sm:grid-cols-2 gap-4">
@@ -103,6 +104,8 @@ export default function Results() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
     </MarketingPageShell>
   );
 }

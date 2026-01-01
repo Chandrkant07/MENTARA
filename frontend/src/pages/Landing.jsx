@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Award, Clock, BarChart3, Users } from 'lucide-react';
+import CurriculumAdsSection from '../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../components/marketing/ProductUniquenessSection';
 
 const Landing = () => {
   const features = [
@@ -99,8 +101,8 @@ const Landing = () => {
             </h1>
 
             <p className="text-xl md:text-2xl text-mentara-muted max-w-3xl mx-auto mb-12 leading-relaxed">
-              Apple-inspired test-prep platform with timed exams, rich analytics, 
-              teacher evaluation, and gamification. Fast, reliable, and beautiful.
+              A workflow-first test-prep platform with timed exams, structured uploads,
+              teacher evaluation, and analytics—built for real exam preparation.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -130,6 +132,15 @@ const Landing = () => {
           </motion.div>
         </div>
       </section>
+
+      <CurriculumAdsSection
+        title="Curriculums & exam tracks"
+        subtitle="IB, ICSE, CBSE, and Cambridge-style practice—organized as real curriculum trees with exam-grade workflows."
+        ctaLabel="Explore Courses"
+        ctaHref="/courses"
+      />
+
+      <ProductUniquenessSection />
 
       {/* Features Section */}
       <section className="py-20 px-6">

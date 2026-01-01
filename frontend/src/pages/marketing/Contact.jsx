@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { CalendarDays, Clock, Mail, MapPin, Phone, Send, ShieldCheck } from 'lucide-react';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
@@ -20,7 +21,7 @@ export default function Contact() {
       },
       {
         q: 'Can you customize branding for an institute?',
-        a: 'Yes. We can adapt copy, colors, and landing assets while keeping the premium product UI intact.',
+        a: 'Yes. We can adapt copy, landing assets, and branding while keeping the exam workflows and dashboards consistent.',
       },
     ],
     []
@@ -190,6 +191,8 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
     </MarketingPageShell>
   );
 }

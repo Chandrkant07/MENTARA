@@ -27,8 +27,20 @@ const Leaderboard = () => {
     setLoading(true);
     try {
       const response = await api.getLeaderboard(timeframe);
-      setLeaderboard(response.data.rankings || []);
-      setUserRank(response.data.user_rank || null);
+      const data = response?.data || {};
+      const rankings = Array.isArray(data.rankings)
+        ? data.rankings
+        : Array.isArray(data.leaders)
+          ? data.leaders.map((e) => ({
+              user_id: e.user_id,
+              name: e.username,
+              score: e.score,
+              tests_completed: e.tests_completed || 0,
+              rank: e.rank,
+            }))
+          : [];
+      setLeaderboard(rankings);
+      setUserRank(data.user_rank || null);
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
     } finally {

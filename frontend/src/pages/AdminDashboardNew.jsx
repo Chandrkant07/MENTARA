@@ -18,7 +18,13 @@ import '../styles/premium-theme.css';
 const AdminDashboardNew = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+    } catch {
+      return true;
+    }
+  });
   const [activeSection, setActiveSection] = useState('overview');
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -37,6 +43,20 @@ const AdminDashboardNew = () => {
       fetchStats();
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    // Keep sidebar open on desktop, closed on mobile.
+    const mq = window.matchMedia('(min-width: 1024px)');
+    const apply = () => setSidebarOpen(mq.matches);
+    apply();
+    try {
+      mq.addEventListener('change', apply);
+      return () => mq.removeEventListener('change', apply);
+    } catch {
+      mq.addListener(apply);
+      return () => mq.removeListener(apply);
+    }
+  }, []);
 
   const fetchStats = async () => {
     try {

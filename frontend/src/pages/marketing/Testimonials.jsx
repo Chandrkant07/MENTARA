@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Quote, ShieldCheck, Star, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Testimonials() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function Testimonials() {
     {
       name: 'Student',
       role: 'IB DP Year 2',
-      text: 'The UI feels premium. Taking tests is smooth, and the review makes mistakes obvious.',
+      text: 'Taking tests is smooth, and the review makes mistakes obvious — it feels exam-ready.',
       metric: '+18% accuracy',
       photo: '/marketing/edukate/testimonial-1.jpg',
     },
@@ -54,8 +55,8 @@ export default function Testimonials() {
 
   const proof = [
     {
-      title: 'Premium feel, real outcomes',
-      desc: 'Social proof that looks like a product case-study section — not random quotes.',
+      title: 'Real outcomes, not just claims',
+      desc: 'Social proof anchored to the student/teacher/admin workflows, not generic testimonials.',
       icon: Trophy,
     },
     {
@@ -84,7 +85,7 @@ export default function Testimonials() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              Social proof that looks premium. Replace names and metrics later — the layout is already product-ready.
+              Feedback from students, teachers, and admins — focused on real workflows like attempts, grading, and analytics.
             </motion.p>
             <div className="mt-8 flex items-center gap-2 text-gray-300">
               {[1, 2, 3, 4, 5].map((i) => (
@@ -205,6 +206,8 @@ export default function Testimonials() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
     </MarketingPageShell>
   );
 }

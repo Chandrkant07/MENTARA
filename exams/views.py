@@ -166,6 +166,21 @@ class ExamViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [IsAdminOrTeacher()]
 
+    def destroy(self, request, *args, **kwargs):
+        """Soft-delete (archive) exams to preserve attempts/history."""
+        instance = self.get_object()
+        if getattr(instance, 'is_active', True):
+            instance.is_active = False
+            instance.save(update_fields=['is_active'])
+        return DRFResponse(
+            {
+                'detail': 'Exam archived successfully.',
+                'archived': True,
+                'id': instance.id,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class CurriculumViewSet(viewsets.ModelViewSet):
     queryset = Curriculum.objects.all()
@@ -862,8 +877,12 @@ def review_attempt(request, attempt_id):
     teacher_remarks = {}
     requires_teacher_grading = False
     needs_grading = False
+    student_uploads = []
+    evaluated_pdf = None
     if isinstance(attempt.metadata, dict):
         teacher_remarks = attempt.metadata.get('teacher_remarks', {}) or {}
+        student_uploads = attempt.metadata.get('student_uploads', []) or []
+        evaluated_pdf = attempt.metadata.get('evaluated_pdf')
     for r in Response.objects.filter(attempt=attempt).select_related('question'):
         if getattr(r.question, 'type', None) == 'STRUCT':
             requires_teacher_grading = True
@@ -890,6 +909,8 @@ def review_attempt(request, attempt_id):
         'percentage': attempt.percentage,
         'requires_teacher_grading': requires_teacher_grading,
         'needs_grading': needs_grading,
+        'student_uploads': student_uploads,
+        'evaluated_pdf': evaluated_pdf,
         'exam_title': attempt.exam.title,
         'duration_seconds': attempt.duration_seconds
     }, status=status.HTTP_200_OK)
@@ -916,14 +937,132 @@ def analytics_user_topics(request, user_id=None):
 @api_view(['GET'])
 @permission_classes([permissions.AllowAny])
 def leaderboard(request):
-    period = request.query_params.get('period','weekly')
-    qs = LeaderboardEntry.objects.filter(time_period=period).order_by('-score_metric','rank','-created_at')[:100]
-    data = []
-    rank_counter = 1
-    for e in qs:
-        data.append({'user_id': e.user_id, 'username': getattr(e.user, 'username', ''), 'score': e.score_metric, 'rank': e.rank or rank_counter})
-        rank_counter += 1
-    return DRFResponse({'period': period, 'leaders': data}, status=status.HTTP_200_OK)
+    from datetime import timedelta
+    from django.db.models import Avg, Count, Exists, OuterRef, Sum
+
+    raw_period = (request.query_params.get('period') or 'weekly').strip().lower()
+    if raw_period in ('all-time', 'all_time', 'alltime', 'all'):
+        period = 'all-time'
+    elif raw_period in ('daily', 'today'):
+        period = 'daily'
+    else:
+        period = 'weekly'
+
+    now = timezone.now()
+    attempts_qs = Attempt.objects.filter(status__in=['submitted', 'timedout']).select_related('user')
+    if period == 'daily':
+        start = now - timedelta(days=1)
+        attempts_qs = attempts_qs.filter(finished_at__gte=start)
+    elif period == 'weekly':
+        start = now - timedelta(days=7)
+        attempts_qs = attempts_qs.filter(finished_at__gte=start)
+
+    pending_struct = Response.objects.filter(
+        attempt_id=OuterRef('pk'),
+        question__type='STRUCT',
+        teacher_mark__isnull=True,
+    )
+    attempts_qs = attempts_qs.annotate(needs_grading=Exists(pending_struct)).filter(needs_grading=False)
+
+    grouped = (
+        attempts_qs.values('user_id', 'user__username')
+        .annotate(
+            tests_completed=Count('id'),
+            avg_percentage=Avg('percentage'),
+            total_score=Sum('total_score'),
+        )
+        .order_by('-avg_percentage', '-tests_completed', '-total_score', 'user_id')
+    )
+
+    rankings = []
+    leaders = []
+    user_rank = None
+
+    for idx, row in enumerate(grouped[:100], start=1):
+        score_pct = round(float(row.get('avg_percentage') or 0.0), 2)
+        tests_completed = int(row.get('tests_completed') or 0)
+        username = row.get('user__username') or ''
+        entry = {
+            'user_id': row.get('user_id'),
+            'name': username,
+            'username': username,
+            'score': score_pct,
+            'tests_completed': tests_completed,
+            'rank': idx,
+        }
+        rankings.append(entry)
+        # Backward-compatible shape
+        leaders.append({'user_id': entry['user_id'], 'username': username, 'score': score_pct, 'rank': idx})
+
+    if getattr(request, 'user', None) is not None and request.user.is_authenticated:
+        try:
+            for entry in rankings:
+                if entry.get('user_id') == request.user.id:
+                    user_rank = {
+                        'user_id': entry.get('user_id'),
+                        'name': entry.get('name'),
+                        'score': entry.get('score'),
+                        'tests_completed': entry.get('tests_completed'),
+                        'rank': entry.get('rank'),
+                    }
+                    break
+        except Exception:
+            user_rank = None
+
+    return DRFResponse(
+        {
+            'period': period,
+            'leaders': leaders,
+            'rankings': rankings,
+            'user_rank': user_rank,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def upload_attempt_submission(request, attempt_id):
+    """Student (or teacher/admin) uploads submission files for an attempt."""
+    attempt = get_object_or_404(Attempt, pk=attempt_id)
+
+    is_privileged = _is_teacher_or_admin(request.user)
+    if not is_privileged and attempt.user_id != request.user.id:
+        return DRFResponse({'detail': 'Not allowed.'}, status=status.HTTP_403_FORBIDDEN)
+
+    files = request.FILES.getlist('files')
+    if not files:
+        f = request.FILES.get('file')
+        if f:
+            files = [f]
+    if not files:
+        return DRFResponse({'detail': 'No files uploaded. Use multipart field "files".'}, status=status.HTTP_400_BAD_REQUEST)
+
+    from django.core.files.storage import default_storage
+    import os
+
+    meta = attempt.metadata or {}
+    uploads = meta.get('student_uploads', []) or []
+
+    for uploaded in files:
+        base, ext = os.path.splitext(uploaded.name or '')
+        ext = (ext or '').lower()
+        safe_name = f"{base[:80]}{ext}" if base else f"upload{ext}"
+        file_path = f"answer_uploads/{attempt.user_id}/{attempt.id}/{timezone.now().strftime('%Y%m%d%H%M%S')}_{safe_name}"
+        saved_path = default_storage.save(file_path, uploaded)
+        uploads.append(
+            {
+                'name': uploaded.name,
+                'path': saved_path,
+                'uploaded_at': timezone.now().isoformat(),
+            }
+        )
+
+    meta['student_uploads'] = uploads
+    attempt.metadata = meta
+    attempt.save(update_fields=['metadata'])
+
+    return DRFResponse({'status': 'uploaded', 'student_uploads': uploads}, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

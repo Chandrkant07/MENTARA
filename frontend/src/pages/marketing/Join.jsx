@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ClipboardList, GraduationCap, Rocket, ShieldCheck, Sparkles, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Join() {
   const navigate = useNavigate();
@@ -39,12 +40,12 @@ export default function Join() {
     },
     {
       title: 'Start with a guided flow',
-      desc: 'Clean onboarding: topics → practice → exams → analytics.',
+      desc: 'Clear learning path: topics → practice → exams → analytics.',
       icon: ClipboardList,
     },
     {
       title: 'Level up with gamified progress',
-      desc: 'Streaks, mastery and leaderboards—kept premium, not childish.',
+      desc: 'Streaks, mastery and leaderboards—kept clean, not childish.',
       icon: Sparkles,
     },
   ];
@@ -56,8 +57,8 @@ export default function Join() {
       icon: ShieldCheck,
     },
     {
-      title: 'Premium speed & clarity',
-      desc: 'A “fintech-clean” UI that feels fast, smooth, and reliable.',
+      title: 'Fast, clear dashboards',
+      desc: 'A clean UI that stays responsive and reliable.',
       icon: Rocket,
     },
     {
@@ -86,7 +87,7 @@ export default function Join() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              Pick your role and jump in. Mentara is designed to look like a product your client instantly trusts.
+              Pick your role and jump in. Mentara is built around real exam workflows and role-based dashboards.
             </motion.p>
 
             <div className="mt-8 glass-card p-6">
@@ -105,7 +106,7 @@ export default function Join() {
                 />
               </div>
               <div className="mt-4 text-sm text-gray-400">
-                A modern edtech product experience: dark premium UI + real content + smooth motion.
+                A modern edtech product experience: guided practice, exam attempts, teacher review, and analytics.
               </div>
             </div>
 
@@ -193,6 +194,8 @@ export default function Join() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
     </MarketingPageShell>
   );
 }

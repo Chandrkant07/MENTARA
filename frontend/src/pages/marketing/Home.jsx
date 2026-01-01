@@ -4,6 +4,8 @@ import { ArrowRight, BookOpen, Brain, Trophy, Users, CheckCircle2, Play } from '
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import CurriculumAdsSection from '../../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -26,7 +28,7 @@ export default function Home() {
     'Clean role-based dashboards for Admin, Teacher, Student',
     'Timed exams with autosave and submit flow',
     'Teacher grading that updates scores and analytics',
-    'Designed for a premium, modern “wow” experience',
+    'Designed for clarity, speed, and exam-day confidence',
   ];
 
   const featuredPacks = [
@@ -79,8 +81,8 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="mt-6 text-lg text-gray-400 max-w-xl"
             >
-              A professional-grade experience for students, teachers, and admins —
-              built to look premium and work perfectly.
+              A workflow-first experience for students, teachers, and admins —
+              timed mocks, structured uploads, teacher evaluation, and analytics.
             </motion.p>
 
             <motion.div
@@ -155,7 +157,7 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-white font-bold">Product Tour</div>
-                  <div className="text-sm text-gray-400 mt-1">Premium UI + real exam workflows, end-to-end.</div>
+                  <div className="text-sm text-gray-400 mt-1">Real exam workflows, end-to-end.</div>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <Play className="w-5 h-5 text-white" />
@@ -239,6 +241,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <CurriculumAdsSection />
+
+      <ProductUniquenessSection />
 
       <section className="px-6 py-14">
         <div className="max-w-7xl mx-auto">

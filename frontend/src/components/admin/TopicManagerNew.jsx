@@ -2,11 +2,61 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FolderTree, Plus, Edit2, Trash2, ChevronRight, ChevronDown, Search, 
-  Save, X, FolderPlus, BookOpen, Sparkles, Check, AlertCircle, RotateCcw
+  Save, X, FolderPlus, BookOpen, Sparkles, Check, AlertCircle, RotateCcw, Archive
 } from 'lucide-react';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+
+const TOPIC_ICON_GROUPS = [
+  {
+    label: 'Core',
+    icons: ['📚', '🧠', '📝', '📌', '✅', '⭐', '🎯', '🔍'],
+  },
+  {
+    label: 'Science',
+    icons: ['🧪', '⚛️', '🔬', '🧬', '🌡️', '🌍', '🌙', '🛰️'],
+  },
+  {
+    label: 'Math',
+    icons: ['➗', '✖️', '➕', '➖', '📈', '📊', '📐', '🧮'],
+  },
+  {
+    label: 'Language',
+    icons: ['🗣️', '✍️', '📖', '📓', '🔤', '📰', '🧾', '💬'],
+  },
+  {
+    label: 'Arts',
+    icons: ['🎨', '🎭', '🎵', '🎬', '📸', '🖌️', '🧵', '🪄'],
+  },
+];
+
+const IconPicker = React.memo(function IconPicker({ value, onChange }) {
+  const flat = TOPIC_ICON_GROUPS.flatMap((g) => g.icons);
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
+        {flat.map((ic) => (
+          <button
+            key={ic}
+            type="button"
+            onClick={() => onChange(ic)}
+            className={`h-10 rounded-lg border transition-all ${
+              value === ic
+                ? 'bg-purple-500/20 border-purple-500/40'
+                : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
+            }`}
+            title={ic}
+            aria-label={`Select icon ${ic}`}
+          >
+            <span className="text-xl">{ic}</span>
+          </button>
+        ))}
+      </div>
+      <div className="text-xs text-gray-400">Click an icon to select. Or type an emoji below.</div>
+    </div>
+  );
+});
 
 const TopicTreeView = React.memo(function TopicTreeView({
   loading,
@@ -163,7 +213,7 @@ const Modal = ({ show, onClose, onSubmit, title, children }) => (
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-lg bg-[#1A1B23] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+          className="w-full max-w-lg bg-[#1A1B23] border border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
         >
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
@@ -177,7 +227,7 @@ const Modal = ({ show, onClose, onSubmit, title, children }) => (
               <X className="w-5 h-5 text-gray-400" />
             </button>
           </div>
-          <form onSubmit={onSubmit} className="p-6 space-y-4">
+          <form onSubmit={onSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
             {children}
             <div className="flex gap-3 pt-4">
               <motion.button
@@ -214,6 +264,7 @@ const TopicManagerNew = () => {
   const [curriculums, setCurriculums] = useState([]);
   const [selectedCurriculumId, setSelectedCurriculumId] = useState('');
   const [loading, setLoading] = useState(true);
+  const [curriculumsLoaded, setCurriculumsLoaded] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedTopics, setExpandedTopics] = useState(new Set());
   const [showCreateCurriculumModal, setShowCreateCurriculumModal] = useState(false);
@@ -236,6 +287,24 @@ const TopicManagerNew = () => {
     [curriculums, selectedCurriculumId]
   );
   const selectedCurriculumArchived = Boolean(selectedCurriculum && selectedCurriculum.is_active === false);
+
+  const fetchTopics = useCallback(
+    async (curriculumId = selectedCurriculumId) => {
+      try {
+        setLoading(true);
+        const response = await api.get('topics/', {
+          params: curriculumId ? { curriculum: curriculumId } : {},
+        });
+        setTopics(Array.isArray(response.data) ? response.data : []);
+      } catch (error) {
+        console.error('Failed to fetch topics:', error);
+        toast.error('Failed to load topics');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [selectedCurriculumId]
+  );
 
   const parentOptions = useMemo(() => {
     const map = new Map();
@@ -272,9 +341,14 @@ const TopicManagerNew = () => {
   }, []);
 
   useEffect(() => {
-    fetchTopics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCurriculumId]);
+    // Prevent an initial unfiltered load (which shows topics across curriculums).
+    if (!selectedCurriculumId) {
+      setTopics([]);
+      setLoading(!curriculumsLoaded);
+      return;
+    }
+    fetchTopics(selectedCurriculumId);
+  }, [selectedCurriculumId, curriculumsLoaded, fetchTopics]);
 
   const fetchCurriculums = async () => {
     try {
@@ -300,6 +374,8 @@ const TopicManagerNew = () => {
       console.error('Failed to fetch curriculums:', error);
       setCurriculums([]);
       setSelectedCurriculumId('');
+    } finally {
+      setCurriculumsLoaded(true);
     }
   };
 
@@ -445,23 +521,12 @@ const TopicManagerNew = () => {
     }
   };
 
-  const fetchTopics = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('topics/', {
-        params: selectedCurriculumId ? { curriculum: selectedCurriculumId } : {},
-      });
-      setTopics(Array.isArray(response.data) ? response.data : []);
-    } catch (error) {
-      console.error('Failed to fetch topics:', error);
-      toast.error('Failed to load topics');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (!selectedCurriculumId) {
+      toast.error('Select a curriculum first');
+      return;
+    }
     try {
       const payload = {
         ...formData,
@@ -583,7 +648,7 @@ const TopicManagerNew = () => {
           'Failed to delete topic'
       );
     }
-  }, []);
+  }, [fetchTopics]);
 
   const openEditModal = useCallback((topic) => {
     setSelectedTopic(topic);
@@ -672,10 +737,10 @@ const TopicManagerNew = () => {
               onClick={handleArchiveCurriculum}
               disabled={!selectedCurriculumId}
               title={!selectedCurriculumId ? 'Select a curriculum first' : 'Archive this curriculum'}
-              className="p-3 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors border border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-3 rounded-lg bg-warning/10 hover:bg-warning/20 text-warning transition-colors border border-warning/20 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Archive curriculum"
             >
-              <Trash2 className="w-5 h-5" />
+              <Archive className="w-5 h-5" />
             </motion.button>
           )}
 
@@ -698,11 +763,13 @@ const TopicManagerNew = () => {
             whileTap={{ scale: 0.95 }}
             onClick={() => setShowCreateModal(true)}
             className="btn-premium"
-            disabled={selectedCurriculumArchived}
+            disabled={!selectedCurriculumId || selectedCurriculumArchived}
             title={
-              selectedCurriculumArchived
-                ? 'This curriculum is archived. Restore it to manage topics.'
-                : undefined
+              !selectedCurriculumId
+                ? 'Select a curriculum first'
+                : selectedCurriculumArchived
+                  ? 'This curriculum is archived. Restore it to manage topics.'
+                  : undefined
             }
           >
             <Plus className="w-5 h-5 inline mr-2" />
@@ -758,17 +825,23 @@ const TopicManagerNew = () => {
       </div>
 
       {/* Topics List */}
-      <div className="premium-card">
-        <TopicTreeView
-          loading={loading}
-          topics={topics}
-          searchTerm={searchTerm}
-          expandedTopics={expandedTopics}
-          onToggleExpand={toggleExpand}
-          onOpenEditModal={openEditModal}
-          onDelete={handleDelete}
-        />
-      </div>
+      {!selectedCurriculumId ? (
+        <div className="premium-card">
+          <div className="text-gray-400">Select a curriculum to view its topics.</div>
+        </div>
+      ) : (
+        <div className="premium-card">
+          <TopicTreeView
+            loading={loading}
+            topics={topics}
+            searchTerm={searchTerm}
+            expandedTopics={expandedTopics}
+            onToggleExpand={toggleExpand}
+            onOpenEditModal={openEditModal}
+            onDelete={handleDelete}
+          />
+        </div>
+      )}
 
       {/* Create Modal */}
       <Modal
@@ -799,15 +872,19 @@ const TopicManagerNew = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">Icon Emoji</label>
+          <label className="block text-sm font-semibold text-gray-300 mb-2">Icon</label>
+          <IconPicker value={formData.icon} onChange={(ic) => setFormData((prev) => ({ ...prev, icon: ic }))} />
+          <div className="mt-3">
+            <label className="block text-xs font-semibold text-gray-400 mb-2">Custom emoji (optional)</label>
           <input
             type="text"
             value={formData.icon}
             onChange={(e) => setFormData((prev) => ({ ...prev, icon: e.target.value }))}
             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
             placeholder="📚"
-            maxLength="2"
+            maxLength="6"
           />
+          </div>
         </div>
         <div>
           <label className="block text-sm font-semibold text-gray-300 mb-2">Parent Topic (Optional)</label>
@@ -917,14 +994,18 @@ const TopicManagerNew = () => {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-300 mb-2">Icon Emoji</label>
+          <label className="block text-sm font-semibold text-gray-300 mb-2">Icon</label>
+          <IconPicker value={formData.icon} onChange={(ic) => setFormData((prev) => ({ ...prev, icon: ic }))} />
+          <div className="mt-3">
+            <label className="block text-xs font-semibold text-gray-400 mb-2">Custom emoji (optional)</label>
           <input
             type="text"
             value={formData.icon}
             onChange={(e) => setFormData((prev) => ({ ...prev, icon: e.target.value }))}
             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
-            maxLength="2"
+            maxLength="6"
           />
+          </div>
         </div>
       </Modal>
     </div>

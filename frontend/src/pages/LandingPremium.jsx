@@ -7,6 +7,8 @@ import {
   ArrowRight, Check, Star, Award, Rocket, Brain, Clock, ChevronRight
 } from 'lucide-react';
 import '../styles/premium-theme.css';
+import CurriculumAdsSection from '../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../components/marketing/ProductUniquenessSection';
 
 const LandingPremium = () => {
   const navigate = useNavigate();
@@ -160,8 +162,8 @@ const LandingPremium = () => {
             transition={{ delay: 0.4 }}
             className="text-xl text-gray-400 mb-12 max-w-3xl mx-auto"
           >
-            Premium test-prep platform with AI-powered analytics, gamified learning, 
-            and comprehensive question banks. Designed for serious students.
+            A workflow-first test-prep platform: curriculum structure, timed exams, structured uploads,
+            teacher evaluation, and analytics that guide improvement.
           </motion.p>
 
           <motion.div
@@ -223,6 +225,15 @@ const LandingPremium = () => {
           </div>
         </motion.div>
       </section>
+
+      <CurriculumAdsSection
+        title="Choose your curriculum. Get exam-ready."
+        subtitle="Explore IB, ICSE, CBSE, and Cambridge-style practice—built around real exam workflows, not just static content pages."
+        ctaLabel="Explore Courses"
+        ctaHref="/courses"
+      />
+
+      <ProductUniquenessSection />
 
       {/* Features Section */}
       <section className="py-20 px-6 relative">

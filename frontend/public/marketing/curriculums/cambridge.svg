@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#60a5fa" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#22c55e" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#a855f7" stop-opacity="0.45"/>
+    </linearGradient>
+    <radialGradient id="r" cx="35%" cy="35%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="600" fill="#0A0B0F"/>
+  <rect width="1200" height="600" fill="url(#g)" opacity="0.55"/>
+  <rect width="1200" height="600" fill="url(#r)"/>
+
+  <g opacity="0.9">
+    <path d="M760 130 C 880 60, 1040 100, 1080 220 C 1120 340, 980 430, 860 400 C 740 370, 680 200, 760 130 Z" fill="#ffffff" opacity="0.06"/>
+    <path d="M820 180 C 900 130, 1000 160, 1030 240 C 1060 320, 970 370, 890 350 C 810 330, 770 230, 820 180 Z" fill="#ffffff" opacity="0.07"/>
+  </g>
+
+  <g transform="translate(70,90)">
+    <rect x="0" y="0" width="520" height="420" rx="28" fill="#0A0B0F" opacity="0.35" stroke="#ffffff" stroke-opacity="0.12"/>
+    <text x="44" y="88" fill="#ffffff" font-size="56" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="800">CAM</text>
+    <text x="44" y="136" fill="#e5e7eb" font-size="22" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="600" opacity="0.9">Cambridge (CAIE)</text>
+
+    <g transform="translate(44,175)">
+      <rect x="0" y="0" width="180" height="44" rx="22" fill="#ffffff" opacity="0.10"/>
+      <text x="18" y="29" fill="#ffffff" font-size="16" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="700">IGCSE</text>
+
+      <rect x="200" y="0" width="160" height="44" rx="22" fill="#ffffff" opacity="0.10"/>
+      <text x="218" y="29" fill="#ffffff" font-size="16" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="700">AS Level</text>
+
+      <rect x="380" y="0" width="140" height="44" rx="22" fill="#ffffff" opacity="0.10"/>
+      <text x="398" y="29" fill="#ffffff" font-size="16" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="700">A Level</text>
+
+      <rect x="0" y="62" width="290" height="44" rx="22" fill="#ffffff" opacity="0.10"/>
+      <text x="18" y="91" fill="#ffffff" font-size="16" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="700">Structured + teacher marking</text>
+    </g>
+
+    <g transform="translate(44,308)" opacity="0.9">
+      <rect x="0" y="0" width="440" height="84" rx="18" fill="#ffffff" opacity="0.08"/>
+      <path d="M28 58 L96 34 L164 52 L232 30 L300 48 L368 36" fill="none" stroke="#ffffff" stroke-opacity="0.45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="96" cy="34" r="7" fill="#ffffff" opacity="0.6"/>
+      <circle cx="232" cy="30" r="7" fill="#ffffff" opacity="0.6"/>
+      <circle cx="368" cy="36" r="7" fill="#ffffff" opacity="0.6"/>
+    </g>
+  </g>
+</svg>

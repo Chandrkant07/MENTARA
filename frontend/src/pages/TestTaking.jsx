@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { 
   Clock, Flag, ChevronLeft, ChevronRight, CheckCircle, 
-  AlertCircle, BookOpen, Save
+  AlertCircle, BookOpen, Save, Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -68,6 +68,12 @@ const TestTaking = () => {
   const [attemptId, setAttemptId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const [phase, setPhase] = useState('questions'); // questions | upload
+  const [uploadFiles, setUploadFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploaded, setUploaded] = useState([]);
+  const [fiveMinWarned, setFiveMinWarned] = useState(false);
+
   useEffect(() => {
     loadTest();
   }, [examId]);
@@ -99,6 +105,20 @@ const TestTaking = () => {
       return () => clearInterval(timer);
     }
   }, [timeRemaining]);
+
+  const isStructuredExam = useMemo(() => {
+    return Array.isArray(questions) && questions.some((q) => q?.question_type === 'STRUCTURED' || q?.type === 'STRUCT');
+  }, [questions]);
+
+  useEffect(() => {
+    if (!isStructuredExam) return;
+    if (fiveMinWarned) return;
+    if (timeRemaining === 300) {
+      setFiveMinWarned(true);
+      // Keep it simple: single warning.
+      alert('5 minutes left. If this is a structured paper, upload your answers before time runs out.');
+    }
+  }, [isStructuredExam, fiveMinWarned, timeRemaining]);
 
   // Auto-save every 10 seconds
   useEffect(() => {
@@ -261,6 +281,13 @@ const TestTaking = () => {
 
   const handleSubmit = async (autoSubmit = false) => {
     if (submitting) return;
+
+    // Structured papers: guide the student to the upload step before final submit.
+    if (isStructuredExam && phase !== 'upload' && !autoSubmit) {
+      setPhase('upload');
+      return;
+    }
+
     if (!autoSubmit) {
       const unanswered = questions.length - Object.keys(answers).length;
       if (unanswered > 0) {
@@ -273,11 +300,22 @@ const TestTaking = () => {
     setSubmitting(true);
     try {
       // Format responses according to backend expectation
-      const responses = questions.map(q => ({
-        question_id: q.id,
-        answer_payload: { answers: [answers[q.id]] },
-        time_spent_seconds: 0
-      }));
+      const responses = questions.map(q => {
+        const isStruct = q.question_type === 'STRUCTURED' || q.type === 'STRUCT';
+        const raw = answers[q.id];
+        if (isStruct) {
+          return {
+            question_id: q.id,
+            answer_payload: { answer: null },
+            time_spent_seconds: 0,
+          };
+        }
+        return {
+          question_id: q.id,
+          answer_payload: { answers: raw === undefined ? [] : [raw] },
+          time_spent_seconds: 0,
+        };
+      });
       
       const submitRes = await api.post(
         `exams/${examId}/submit/`,
@@ -305,6 +343,37 @@ const TestTaking = () => {
       alert(`Failed to submit test: ${msg}\n\nPlease try again.`);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleUploadSubmissions = async () => {
+    if (!attemptId) return;
+    if (!uploadFiles || uploadFiles.length === 0) {
+      alert('Please select at least one file to upload.');
+      return;
+    }
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      uploadFiles.forEach((f) => formData.append('files', f));
+
+      const res = await api.post(`attempts/${attemptId}/upload-submission/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120_000,
+      });
+
+      setUploaded(res?.data?.student_uploads || []);
+      alert('Upload successful.');
+    } catch (error) {
+      console.error('Upload failed:', error);
+      const msg =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        error.message ||
+        'Failed to upload.';
+      alert(`Upload failed: ${msg}`);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -372,7 +441,7 @@ const TestTaking = () => {
                 disabled={submitting}
                 className="btn-primary"
               >
-                {submitting ? 'Submitting...' : 'Submit Test'}
+                {submitting ? 'Submitting...' : (isStructuredExam && phase !== 'upload' ? 'Finish & Upload' : 'Submit Test')}
               </button>
             </div>
           </div>
@@ -392,130 +461,205 @@ const TestTaking = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Question Area */}
           <div className="lg:col-span-3">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentQuestionIndex}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="card-elevated"
-              >
-                {/* Question Header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                      <span className="font-bold text-primary">{currentQuestionIndex + 1}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Question {currentQuestionIndex + 1} of {questions.length}</p>
-                      <p className="text-sm font-semibold text-text">{currentQuestion.marks} marks</p>
-                    </div>
+            {phase === 'upload' ? (
+              <div className="card-elevated">
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-2xl font-bold text-text">Upload your answers</h2>
+                    <p className="text-text-secondary">
+                      Upload your files for teacher evaluation. Supported: PDF, images, Word/Excel, CSV.
+                    </p>
                   </div>
-
-                  <button
-                    onClick={() => toggleFlag(currentQuestion.id)}
-                    className={`p-2 rounded-lg transition-colors ${
-                      flagged.has(currentQuestion.id)
-                        ? 'bg-warning/20 text-warning'
-                        : 'bg-surface text-text-secondary hover:bg-surface/80'
-                    }`}
-                  >
-                    <Flag className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-warning/10 border border-warning/20">
+                    <AlertCircle className="w-4 h-4 text-warning" />
+                    <span className="text-sm text-warning">Time left: {formatTime(timeRemaining)}</span>
+                  </div>
                 </div>
 
-                {/* Question Text */}
-                <div className="mb-8">
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-lg text-text whitespace-pre-wrap">{currentQuestion.question_text}</p>
-                  </div>
-                  
-                  {currentQuestion.image && (
-                    <img 
-                      src={resolveMediaUrl(currentQuestion.image)} 
-                      alt="Question" 
-                      className="mt-4 rounded-xl max-w-full"
-                    />
-                  )}
-                </div>
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.csv"
+                    onChange={(e) => setUploadFiles(Array.from(e.target.files || []))}
+                    className="input-mentara"
+                  />
 
-                {/* Answer Options */}
-                <div className="space-y-3">
-                  {currentQuestion.question_type === 'MCQ' && currentQuestion.choices && (
-                    <>
-                      {Object.entries(currentQuestion.choices).map(([key, value]) => (
-                        <motion.div
-                          key={key}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={() => handleAnswerSelect(currentQuestion.id, key)}
-                          className={`choice-block ${
-                            answers[currentQuestion.id] === key ? 'selected' : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                              answers[currentQuestion.id] === key
-                                ? 'border-bg bg-bg'
-                                : 'border-primary'
-                            }`}>
-                              {answers[currentQuestion.id] === key && (
-                                <CheckCircle className="w-4 h-4 text-primary" />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <span className="font-semibold mr-2">{key}.</span>
-                              <span>{value}</span>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </>
-                  )}
-
-                  {currentQuestion.question_type === 'STRUCTURED' && (
-                    <div className="space-y-4">
-                      <textarea
-                        value={answers[currentQuestion.id] || ''}
-                        onChange={(e) => handleAnswerSelect(currentQuestion.id, e.target.value)}
-                        placeholder="Type your answer here..."
-                        className="input-mentara min-h-[200px] font-mono text-sm"
-                        style={{ resize: 'vertical' }}
-                      />
-                      <div className="flex items-center gap-2 text-sm text-text-secondary">
-                        <Save className="w-4 h-4" />
-                        <span>Auto-saving every 10 seconds</span>
+                  {uploadFiles.length > 0 && (
+                    <div className="p-4 rounded-xl bg-surface/40 border border-elevated/50">
+                      <div className="text-sm font-semibold text-text mb-2">Selected files</div>
+                      <div className="space-y-1 text-sm text-text-secondary">
+                        {uploadFiles.map((f) => (
+                          <div key={f.name} className="truncate">{f.name}</div>
+                        ))}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Navigation */}
-                <div className="flex items-center justify-between mt-8 pt-6 border-t border-elevated">
-                  <button
-                    onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
-                    disabled={currentQuestionIndex === 0}
-                    className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4 mr-2" />
-                    Previous
-                  </button>
+                  {Array.isArray(uploaded) && uploaded.length > 0 && (
+                    <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+                      <div className="text-sm font-semibold text-text mb-2">Uploaded</div>
+                      <div className="space-y-1 text-sm text-text-secondary">
+                        {uploaded.map((u, idx) => (
+                          <div key={`${u.path || ''}_${idx}`} className="truncate">{u.name || u.path}</div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
-                  <button
-                    onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                    disabled={currentQuestionIndex === questions.length - 1}
-                    className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      onClick={() => setPhase('questions')}
+                      className="btn-secondary"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Back to questions
+                    </button>
+
+                    <button
+                      onClick={handleUploadSubmissions}
+                      disabled={uploading || uploadFiles.length === 0}
+                      className="btn-secondary"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {uploading ? 'Uploading…' : 'Upload files'}
+                    </button>
+
+                    <button
+                      onClick={() => handleSubmit(false)}
+                      disabled={submitting}
+                      className="btn-primary"
+                    >
+                      {submitting ? 'Submitting…' : 'Submit for evaluation'}
+                    </button>
+                  </div>
                 </div>
-              </motion.div>
-            </AnimatePresence>
+              </div>
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentQuestionIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="card-elevated"
+                >
+                  {/* Question Header */}
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                        <span className="font-bold text-primary">{currentQuestionIndex + 1}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Question {currentQuestionIndex + 1} of {questions.length}</p>
+                        <p className="text-sm font-semibold text-text">{currentQuestion.marks} marks</p>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => toggleFlag(currentQuestion.id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        flagged.has(currentQuestion.id)
+                          ? 'bg-warning/20 text-warning'
+                          : 'bg-surface text-text-secondary hover:bg-surface/80'
+                      }`}
+                    >
+                      <Flag className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Question Text */}
+                  <div className="mb-8">
+                    <div className="prose prose-invert max-w-none">
+                      <p className="text-lg text-text whitespace-pre-wrap">{currentQuestion.question_text}</p>
+                    </div>
+                    
+                    {currentQuestion.image && (
+                      <img 
+                        src={resolveMediaUrl(currentQuestion.image)} 
+                        alt="Question" 
+                        className="mt-4 rounded-xl max-w-full"
+                      />
+                    )}
+                  </div>
+
+                  {/* Answer Options */}
+                  <div className="space-y-3">
+                    {currentQuestion.question_type === 'MCQ' && currentQuestion.choices && (
+                      <>
+                        {Object.entries(currentQuestion.choices).map(([key, value]) => (
+                          <motion.div
+                            key={key}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            onClick={() => handleAnswerSelect(currentQuestion.id, key)}
+                            className={`choice-block ${
+                              answers[currentQuestion.id] === key ? 'selected' : ''
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                answers[currentQuestion.id] === key
+                                  ? 'border-bg bg-bg'
+                                  : 'border-primary'
+                              }`}>
+                                {answers[currentQuestion.id] === key && (
+                                  <CheckCircle className="w-4 h-4 text-primary" />
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <span className="font-semibold mr-2">{key}.</span>
+                                <span>{value}</span>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </>
+                    )}
+
+                    {currentQuestion.question_type === 'STRUCTURED' && (
+                      <div className="p-4 rounded-2xl bg-surface/40 border border-elevated/50">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle className="w-5 h-5 text-warning mt-0.5" />
+                          <div>
+                            <div className="font-semibold text-text">Structured question</div>
+                            <div className="text-sm text-text-secondary mt-1">
+                              Solve this on paper / offline. You will upload your final answers at the end.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Navigation */}
+                  <div className="flex items-center justify-between mt-8 pt-6 border-t border-elevated">
+                    <button
+                      onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))}
+                      disabled={currentQuestionIndex === 0}
+                      className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4 mr-2" />
+                      Previous
+                    </button>
+
+                    <button
+                      onClick={() => setCurrentQuestionIndex(prev => Math.min(questions.length - 1, prev + 1))}
+                      disabled={currentQuestionIndex === questions.length - 1}
+                      className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </button>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
 
           {/* Right Sidebar - Question Navigator */}
+          {!isStructuredExam && phase === 'questions' && (
           <div className="lg:col-span-1">
             <div className="card-elevated sticky top-24">
               <h3 className="font-bold text-text mb-4">Questions</h3>
@@ -557,6 +701,7 @@ const TestTaking = () => {
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

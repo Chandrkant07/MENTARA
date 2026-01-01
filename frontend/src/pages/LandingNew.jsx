@@ -6,6 +6,8 @@ import {
   CheckCircle, Star, ArrowRight, Menu, X, 
   BarChart3, Clock, Shield 
 } from 'lucide-react';
+import CurriculumAdsSection from '../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../components/marketing/ProductUniquenessSection';
 
 const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -202,6 +204,18 @@ const LandingPage = () => {
           </motion.div>
         </div>
       </section>
+
+      <CurriculumAdsSection
+        title="Curriculums we support"
+        subtitle="IB, ICSE, CBSE, and Cambridge-style practice with a complete workflow: topics → practice → timed exams → uploads → teacher grading → analytics."
+        ctaLabel="See Courses"
+        ctaHref="/courses"
+      />
+
+      <ProductUniquenessSection
+        title="Built around real exam workflows"
+        subtitle="Mentara connects students, teachers, and admins with curriculum-first structure, structured uploads, and evaluation-ready attempts."
+      />
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4 bg-dark-surface">

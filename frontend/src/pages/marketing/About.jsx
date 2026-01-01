@@ -2,13 +2,15 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import CurriculumAdsSection from '../../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function About() {
   const pillars = [
-    { icon: Sparkles, title: 'Premium by design', desc: 'Glassmorphism, clean spacing, and modern typography.' },
-    { icon: ShieldCheck, title: 'Reliable workflows', desc: 'Stable admin, teacher, and student journeys that work.' },
-    { icon: TrendingUp, title: 'Insight-first', desc: 'Results and progress that feel instant and meaningful.' },
-    { icon: BookOpen, title: 'Education-ready', desc: 'Purpose built for structured and MCQ learning.' },
+    { icon: BookOpen, title: 'Curriculum-first structure', desc: 'Topics and question banks organized as real curriculum trees.' },
+    { icon: ShieldCheck, title: 'Exam-safe attempts', desc: 'Autosave/resume behavior that preserves timing and history.' },
+    { icon: TrendingUp, title: 'Teacher-reviewed learning', desc: 'Marks, remarks, and evaluated PDFs for structured answers.' },
+    { icon: Sparkles, title: 'Modern and focused UX', desc: 'Clean screens that keep students, teachers, and admins on-task.' },
   ];
 
   return (
@@ -29,9 +31,8 @@ export default function About() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              Mentara is built to feel like a premium product: clean screens, clear flows,
-              and strong role-based experiences — so students stay focused, teachers stay productive,
-              and admins stay in control.
+              Mentara is built around real exam workflows: curriculum-organized practice, timed mocks,
+              structured uploads, teacher evaluation, and analytics — with clean role-based dashboards.
             </motion.p>
 
             <div className="mt-8 grid gap-4">
@@ -78,13 +79,13 @@ export default function About() {
                 <div className="premium-card">
                   <div className="text-white font-semibold">Mission</div>
                   <div className="mt-2 text-gray-400">
-                    Make exam preparation feel structured, motivating, and premium — with dashboards that guide every role.
+                    Make exam preparation feel structured and measurable — with guided workflows that support every role.
                   </div>
                 </div>
                 <div className="premium-card">
                   <div className="text-white font-semibold">How we do it</div>
                   <div className="mt-2 text-gray-400">
-                    Clean UX, gamified feedback loops (progress, streaks, rank), and workflows that stay reliable in production.
+                    Curriculum structure, attempt integrity, teacher review, and clear analytics — wrapped in a modern UI.
                   </div>
                 </div>
               </div>
@@ -92,6 +93,15 @@ export default function About() {
           </div>
         </div>
       </section>
+
+      <CurriculumAdsSection
+        title="Built for IB, ICSE, CBSE & Cambridge"
+        subtitle="Choose a curriculum track and get a consistent exam workflow: practice → attempt → teacher review → analytics."
+        ctaLabel="Explore Courses"
+        ctaHref="/courses"
+      />
+
+      <ProductUniquenessSection />
 
       <section className="px-6 pb-16">
         <div className="max-w-7xl mx-auto">

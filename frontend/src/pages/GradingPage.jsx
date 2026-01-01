@@ -20,6 +20,16 @@ function GradingPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const API_BASE = (api?.defaults?.baseURL || '').replace(/\/+$/, '');
+  const BACKEND_ORIGIN = API_BASE.replace(/\/?api\/?$/, '');
+  const resolveMediaUrl = (maybeUrl) => {
+    if (!maybeUrl) return null;
+    if (typeof maybeUrl !== 'string') return null;
+    if (/^https?:\/\//i.test(maybeUrl)) return maybeUrl;
+    if (maybeUrl.startsWith('/')) return `${BACKEND_ORIGIN}${maybeUrl}`;
+    return `${BACKEND_ORIGIN}/${maybeUrl}`;
+  };
+
   useEffect(() => {
     loadAttempt();
   }, [attemptId]);
@@ -28,6 +38,8 @@ function GradingPage() {
     try {
       const res = await api.get(`attempts/${attemptId}/review/`);
       const data = res?.data;
+
+      setAttempt(data);
       
       setResponses(data.responses || []);
       
@@ -132,6 +144,44 @@ function GradingPage() {
           </div>
 
           <div className="space-y-6">
+            {(Array.isArray(attempt?.student_uploads) && attempt.student_uploads.length > 0) || attempt?.evaluated_pdf ? (
+              <div className="card-elevated">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-lg font-bold text-text">Submission Files</div>
+                    <div className="text-sm text-text-secondary">Student uploads and evaluated PDF.</div>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {Array.isArray(attempt?.student_uploads) && attempt.student_uploads.map((u, idx) => (
+                    <a
+                      key={`${u.path || ''}_${idx}`}
+                      href={resolveMediaUrl(u.path)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block p-3 rounded-xl bg-surface/40 border border-elevated/50 hover:bg-elevated transition-colors"
+                    >
+                      <div className="text-sm font-semibold text-text truncate">{u.name || u.path}</div>
+                      {u.uploaded_at && <div className="text-xs text-text-secondary">{u.uploaded_at}</div>}
+                    </a>
+                  ))}
+
+                  {attempt?.evaluated_pdf && (
+                    <a
+                      href={resolveMediaUrl(attempt.evaluated_pdf)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/20 transition-colors"
+                    >
+                      <div className="text-sm font-semibold text-text truncate">Evaluated PDF</div>
+                      <div className="text-xs text-text-secondary truncate">{attempt.evaluated_pdf}</div>
+                    </a>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
             {responses.map((response, idx) => (
               <div key={response.question_id} className="card-elevated">
                 <div className="flex items-start justify-between gap-4">

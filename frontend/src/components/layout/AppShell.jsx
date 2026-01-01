@@ -41,7 +41,13 @@ const AppShell = ({
 
           {nav ? nav : null}
 
-          {right ? <div className="flex items-center gap-3 w-full sm:w-auto justify-end">{right}</div> : <div />}
+          {right ? (
+            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+              {right}
+            </div>
+          ) : (
+            <div />
+          )}
         </div>
       </header>
 

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { BookOpen, Layers, NotebookPen, Timer, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import MarketingPageShell from '../../components/marketing/MarketingPageShell';
+import CurriculumAdsSection from '../../components/marketing/CurriculumAdsSection';
+import ProductUniquenessSection from '../../components/marketing/ProductUniquenessSection';
 
 export default function Courses() {
   const navigate = useNavigate();
@@ -57,8 +59,8 @@ export default function Courses() {
               transition={{ delay: 0.05 }}
               className="mt-5 text-gray-400 text-lg max-w-xl"
             >
-              Present your product as a premium learning suite: topic practice, mocks,
-              teacher evaluation, and a polished question library.
+              Offer curriculum-organized practice: topic packs, timed mocks,
+              structured answer uploads with teacher evaluation, and analytics.
             </motion.p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -85,6 +87,8 @@ export default function Courses() {
           </div>
         </div>
       </section>
+
+      <ProductUniquenessSection />
 
       <section className="px-6 pb-16">
         <div className="max-w-7xl mx-auto">
@@ -125,6 +129,18 @@ export default function Courses() {
           </div>
         </div>
       </section>
+
+      {/* Curriculum-specific advertisement section */}
+      <div id="ib" />
+      <div id="icse" />
+      <div id="cbse" />
+      <div id="cambridge" />
+      <CurriculumAdsSection
+        title="Pick a curriculum. Start winning exams."
+        subtitle="We support IB, ICSE, CBSE, and Cambridge-style practice with a premium workflow: topic packs, mocks, uploads, teacher grading, and analytics."
+        ctaLabel="Join Now"
+        ctaHref="/join"
+      />
     </MarketingPageShell>
   );
 }
