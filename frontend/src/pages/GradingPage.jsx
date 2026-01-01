@@ -204,7 +204,11 @@ function GradingPage() {
                   <div className="p-4 rounded-2xl bg-surface/40 border border-elevated/50">
                     <div className="text-xs text-text-secondary mb-2">Student answer</div>
                     <div className="text-sm text-text whitespace-pre-wrap break-words">
-                      {response.answer === null || response.answer === undefined ? '—' : JSON.stringify(response.answer)}
+                      {response?.question_type === 'STRUCT'
+                        ? ((Array.isArray(attempt?.student_uploads) && attempt.student_uploads.length > 0)
+                          ? 'Uploaded submission available (see Submission Files above).'
+                          : '—')
+                        : (response.answer === null || response.answer === undefined ? '—' : JSON.stringify(response.answer))}
                     </div>
                   </div>
 

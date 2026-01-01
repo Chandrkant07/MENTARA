@@ -45,7 +45,7 @@ const Results = () => {
       
       const totalQuestions = review.responses?.length || 0;
       const correctAnswers = review.responses?.filter(r => r.correct).length || 0;
-      const incorrectAnswers = review.responses?.filter(r => !r.correct && r.answer).length || 0;
+      const incorrectAnswers = review.responses?.filter(r => r.correct === false && r.answer).length || 0;
       const unanswered = totalQuestions - correctAnswers - incorrectAnswers;
 
       // Use marks-based percentage from backend (works for both MCQ and teacher-graded STRUCT).

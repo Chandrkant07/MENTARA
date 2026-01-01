@@ -19,6 +19,16 @@ function AttemptReview() {
     load();
   }, [attemptId]);
 
+  const API_BASE = (api?.defaults?.baseURL || '').replace(/\/+$/, '');
+  const BACKEND_ORIGIN = API_BASE.replace(/\/?api\/?$/, '');
+  const resolveMediaUrl = (maybeUrl) => {
+    if (!maybeUrl) return null;
+    if (typeof maybeUrl !== 'string') return null;
+    if (/^https?:\/\//i.test(maybeUrl)) return maybeUrl;
+    if (maybeUrl.startsWith('/')) return `${BACKEND_ORIGIN}${maybeUrl}`;
+    return `${BACKEND_ORIGIN}/${maybeUrl}`;
+  };
+
   async function load() {
     try {
       const res = await api.get(`attempts/${attemptId}/review/`);
@@ -73,6 +83,50 @@ function AttemptReview() {
             <Badge tone="primary">Attempt #{attemptId}</Badge>
           </div>
 
+          {data?.missing_submission_upload ? (
+            <div className="card-elevated mb-6">
+              <div className="text-text font-bold">Submission file not found</div>
+              <div className="mt-1 text-sm text-text-secondary">
+                This attempt contains structured questions but no uploaded answer file is attached. If you uploaded,
+                please retry the upload and contact support if it still doesn’t appear.
+              </div>
+            </div>
+          ) : null}
+
+          {(Array.isArray(data?.student_uploads) && data.student_uploads.length > 0) || data?.evaluated_pdf ? (
+            <div className="card-elevated mb-6">
+              <div className="text-lg font-bold text-text">Submission Files</div>
+              <div className="text-sm text-text-secondary">Your uploaded answers and the evaluated PDF (if published).</div>
+
+              <div className="mt-4 space-y-2">
+                {Array.isArray(data?.student_uploads) && data.student_uploads.map((u, idx) => (
+                  <a
+                    key={`${u.path || ''}_${idx}`}
+                    href={resolveMediaUrl(u.path)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block p-3 rounded-xl bg-surface/40 border border-elevated/50 hover:bg-elevated transition-colors"
+                  >
+                    <div className="text-sm font-semibold text-text truncate">{u.name || u.path}</div>
+                    {u.uploaded_at && <div className="text-xs text-text-secondary">{u.uploaded_at}</div>}
+                  </a>
+                ))}
+
+                {data?.evaluated_pdf ? (
+                  <a
+                    href={resolveMediaUrl(data.evaluated_pdf)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block p-3 rounded-xl bg-accent/10 border border-accent/20 hover:bg-accent/20 transition-colors"
+                  >
+                    <div className="text-sm font-semibold text-text truncate">Evaluated PDF</div>
+                    <div className="text-xs text-text-secondary truncate">{data.evaluated_pdf}</div>
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           <div className="card-elevated">
             <h2 className="text-xl font-bold text-text mb-4">Responses</h2>
             <div className="space-y-3">
@@ -85,12 +139,12 @@ function AttemptReview() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <div className="font-bold text-text">Q{idx + 1}</div>
-                        {r.correct === true ? (
+                          {r.correct === true ? (
                           <Badge tone="accent"><CheckCircle className="w-3.5 h-3.5 mr-1" />Correct</Badge>
                         ) : r.correct === false ? (
                           <Badge tone="danger"><XCircle className="w-3.5 h-3.5 mr-1" />Incorrect</Badge>
                         ) : (
-                          <Badge>Reviewed</Badge>
+                            <Badge>{r.question_type === 'STRUCT' ? 'Under review' : 'Reviewed'}</Badge>
                         )}
                       </div>
                       <div className="mt-2 text-sm text-text-secondary whitespace-pre-wrap">
@@ -109,7 +163,11 @@ function AttemptReview() {
                     <div className="p-3 rounded-xl bg-bg border border-elevated/50">
                       <div className="text-xs text-text-secondary mb-1">Your answer</div>
                       <div className="text-sm text-text whitespace-pre-wrap break-words">
-                        {r.answer === null || r.answer === undefined ? '—' : JSON.stringify(r.answer)}
+                        {r.question_type === 'STRUCT'
+                          ? ((Array.isArray(data?.student_uploads) && data.student_uploads.length > 0)
+                            ? 'Uploaded submission (see Submission Files above).'
+                            : '—')
+                          : (r.answer === null || r.answer === undefined ? '—' : JSON.stringify(r.answer))}
                       </div>
                     </div>
                     <div className="p-3 rounded-xl bg-bg border border-elevated/50">

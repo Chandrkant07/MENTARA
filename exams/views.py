@@ -884,24 +884,37 @@ def review_attempt(request, attempt_id):
         student_uploads = attempt.metadata.get('student_uploads', []) or []
         evaluated_pdf = attempt.metadata.get('evaluated_pdf')
     for r in Response.objects.filter(attempt=attempt).select_related('question'):
-        if getattr(r.question, 'type', None) == 'STRUCT':
+        q_type = getattr(r.question, 'type', None)
+        is_struct = q_type == 'STRUCT'
+        if is_struct:
             requires_teacher_grading = True
             if r.teacher_mark is None:
                 needs_grading = True
+
+        # For STRUCT responses, don't show an auto-correct/incorrect flag in the API.
+        # The actual evaluation happens via teacher marks + uploaded submission.
+        display_correct = None if is_struct else r.correct
+        # The stored payload for STRUCT is usually {answer: null}; avoid confusing UI output.
+        display_answer = None if is_struct else r.answer_payload
+
         q_marks = r.teacher_mark if r.teacher_mark is not None else (r.question.marks if r.correct else 0)
         total_marks += r.question.marks
         res.append({
             'response_id': r.id,
             'question_id': r.question_id,
             'statement': r.question.statement,
-            'answer': r.answer_payload,
-            'correct': r.correct,
+            'question_type': q_type,
+            'answer': display_answer,
+            'correct': display_correct,
             'time_spent': r.time_spent_seconds,
             'marks_obtained': q_marks,
             'total_marks': r.question.marks,
             'teacher_mark': r.teacher_mark,
             'remarks': teacher_remarks.get(str(r.question_id), ''),
         })
+
+    missing_submission_upload = bool(requires_teacher_grading and not (student_uploads or []))
+
     return DRFResponse({
         'responses': res, 
         'score': attempt.total_score, 
@@ -911,6 +924,7 @@ def review_attempt(request, attempt_id):
         'needs_grading': needs_grading,
         'student_uploads': student_uploads,
         'evaluated_pdf': evaluated_pdf,
+        'missing_submission_upload': missing_submission_upload,
         'exam_title': attempt.exam.title,
         'duration_seconds': attempt.duration_seconds
     }, status=status.HTTP_200_OK)
