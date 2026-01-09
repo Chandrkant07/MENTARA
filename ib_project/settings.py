@@ -51,6 +51,18 @@ INSTALLED_APPS = [
 ]
 
 # -------------------------------------------------------------------
+# OPTIONAL: CLOUDINARY MEDIA STORAGE
+# -------------------------------------------------------------------
+
+USE_CLOUDINARY = os.getenv('USE_CLOUDINARY', 'False') == 'True'
+
+if USE_CLOUDINARY:
+    INSTALLED_APPS += [
+        'cloudinary',
+        'cloudinary_storage',
+    ]
+
+# -------------------------------------------------------------------
 # MIDDLEWARE
 # -------------------------------------------------------------------
 
@@ -175,7 +187,20 @@ if not DEBUG:
 
 USE_S3 = os.getenv('USE_S3', 'False') == 'True'
 
-if USE_S3:
+if USE_CLOUDINARY:
+    # Cloudinary storage (good for Render deployments where local disk is ephemeral)
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+        # Optional: keep uploads private and serve via signed URLs (advanced).
+        # 'SECURE': True,
+    }
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # MEDIA_URL is typically not required because storage returns absolute URLs.
+    MEDIA_URL = '/media/'
+
+elif USE_S3:
     # S3-compatible storage for uploaded media (recommended for production).
     # Works with AWS S3, Cloudflare R2 (S3 API), Wasabi, etc.
     AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
@@ -184,12 +209,18 @@ if USE_S3:
     AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'us-east-1')
     AWS_S3_ENDPOINT_URL = os.getenv('AWS_S3_ENDPOINT_URL', '') or None
     AWS_S3_CUSTOM_DOMAIN = os.getenv('AWS_S3_CUSTOM_DOMAIN', '') or None
+    # Public base URL for serving media files.
+    # Useful for S3-compatible providers (e.g., Cloudflare R2) where the API endpoint URL
+    # is not the same as the public file-serving URL.
+    AWS_S3_PUBLIC_BASE_URL = os.getenv('AWS_S3_PUBLIC_BASE_URL', '') or None
     AWS_QUERYSTRING_AUTH = False
     AWS_DEFAULT_ACL = 'public-read'
 
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
-    if AWS_S3_CUSTOM_DOMAIN:
+    if AWS_S3_PUBLIC_BASE_URL:
+        MEDIA_URL = AWS_S3_PUBLIC_BASE_URL.rstrip('/') + '/'
+    elif AWS_S3_CUSTOM_DOMAIN:
         MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/'
     else:
         # Fallback to standard AWS host style.
