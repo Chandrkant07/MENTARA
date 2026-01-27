@@ -25,12 +25,14 @@ import AdminDashboardNew from './pages/AdminDashboardNew';
 import TeacherDashboard from './pages/TeacherDashboard';
 import GradingPage from './pages/GradingPage';
 import TeacherExams from './pages/TeacherExams';
+import TeacherAssignments from './pages/TeacherAssignments';
 import ExamsList from './pages/ExamsList';
 import Library from './pages/Library';
 import AttemptReview from './pages/AttemptReview';
 import TestTaking from './pages/TestTaking';
 import Results from './pages/Results';
 import Leaderboard from './pages/Leaderboard';
+import MyAssignments from './pages/MyAssignments';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requireAuth = true, requireRole = null }) => {
@@ -157,6 +159,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/teacher/assignments"
+          element={
+            <ProtectedRoute requireRole="teacher">
+              <TeacherAssignments />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/teacher/grade/:attemptId"
           element={
@@ -172,6 +183,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/assignments"
+          element={
+            <ProtectedRoute>
+              <MyAssignments />
             </ProtectedRoute>
           }
         />

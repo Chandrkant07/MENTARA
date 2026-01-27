@@ -24,6 +24,7 @@ export default function TeacherNav({ active = 'dashboard' }) {
     <nav className="flex items-center gap-1 md:gap-2 bg-surface/40 border border-elevated/50 rounded-2xl p-1 backdrop-blur overflow-x-auto no-scrollbar max-w-[62vw] sm:max-w-none">
       {item('dashboard', '/teacher/dashboard', 'Dashboard')}
       {item('exams', '/teacher/exams', 'Exams')}
+    {item('assignments', '/teacher/assignments', 'Assignments')}
     </nav>
   );
 }

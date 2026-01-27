@@ -45,6 +45,7 @@ urlpatterns = [
     # API routes
     path('api/', include('exams.urls')),
     path('api/', include('accounts.urls')),  # Includes all accounts API routes
+    path('api/', include('learning.urls')),
     path('api/auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

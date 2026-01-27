@@ -597,6 +597,56 @@ def start_exam(request, exam_id):
     exam = get_object_or_404(Exam.objects.select_related('topic__curriculum'), pk=exam_id, is_active=True)
     now = timezone.now()
 
+    assignment_id = request.data.get('assignment_id') or request.query_params.get('assignment_id')
+    assignment = None
+    if assignment_id:
+        try:
+            from learning.models import LearningAssignment
+
+            assignment = (
+                LearningAssignment.objects.select_related('assigned_to')
+                .filter(id=int(assignment_id), assigned_to=request.user)
+                .first()
+            )
+        except Exception:
+            assignment = None
+
+        if not assignment:
+            return DRFResponse({'detail': 'Assignment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if assignment.assignment_type != 'MOCK_TEST' or not assignment.exam_id:
+            return DRFResponse({'detail': 'Assignment is not a mock test'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if int(assignment.exam_id) != int(exam.id):
+            return DRFResponse({'detail': 'Assignment does not match this exam'}, status=status.HTTP_409_CONFLICT)
+
+        # Enforce lock rules at API level (time window + basic sequence).
+        if not assignment.unlock_override:
+            if assignment.end_at and now > assignment.end_at:
+                return DRFResponse({'detail': 'Assignment expired'}, status=status.HTTP_410_GONE)
+            if assignment.start_at and now < assignment.start_at:
+                return DRFResponse({'detail': 'Assignment is locked (not started yet)'}, status=status.HTTP_423_LOCKED)
+
+            # Sequence lock: earlier incomplete teacher-mandatory assignments block later ones.
+            try:
+                from learning.models import LearningAssignment as LA
+
+                blocked = (
+                    LA.objects.filter(
+                        assigned_to=request.user,
+                        priority=LA.PRIORITY_MANDATORY,
+                        completed_at__isnull=True,
+                        sequence_order__lt=assignment.sequence_order,
+                    )
+                    .exclude(assigned_by_role='ADMIN')
+                    .exists()
+                )
+            except Exception:
+                blocked = False
+
+            if blocked:
+                return DRFResponse({'detail': 'Assignment is locked by sequence'}, status=status.HTTP_423_LOCKED)
+
     # Enforce: one exam can only be attempted once per student.
     # If already submitted/timedout, do not allow a new attempt.
     completed = (
@@ -645,6 +695,14 @@ def start_exam(request, exam_id):
                 dup.save(update_fields=['status', 'finished_at', 'duration_seconds'])
         else:
             attempt = Attempt.objects.create(user=request.user, exam=exam, started_at=now)
+
+        if assignment is not None:
+            # Attach attempt to assignment for progress tracking.
+            if attempt.assignment_id and int(attempt.assignment_id) != int(assignment.id):
+                return DRFResponse({'detail': 'Attempt already linked to a different assignment'}, status=status.HTTP_409_CONFLICT)
+            if not attempt.assignment_id:
+                attempt.assignment = assignment
+                attempt.save(update_fields=['assignment'])
 
         expires_at_dt = attempt.started_at + timedelta(seconds=exam.duration_seconds)
         expires_at = expires_at_dt.isoformat()
@@ -858,6 +916,18 @@ def submit_exam(request, exam_id):
         attempt.total_score = score
         attempt.percentage = round((float(score) / float(total)) * 100.0, 2) if total else 0.0
         attempt.save(update_fields=['finished_at', 'duration_seconds', 'status', 'total_score', 'percentage'])
+
+        # Mark linked mock-test assignment as completed (submitted or timedout both count).
+        try:
+            if attempt.assignment_id and attempt.status in ('submitted', 'timedout'):
+                from learning.models import LearningAssignment
+
+                a = LearningAssignment.objects.filter(id=attempt.assignment_id, assigned_to=request.user).first()
+                if a and a.completed_at is None:
+                    a.completed_at = attempt.finished_at or now
+                    a.save(update_fields=['completed_at', 'updated_at'])
+        except Exception:
+            pass
 
         try:
             attempt.calculate_percentile()

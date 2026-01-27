@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, ClipboardCheck, GraduationCap, Users, FileText, Sparkles, TrendingUp, Folder, ChevronDown, ChevronRight, Activity, Zap } from 'lucide-react';
+import { BookOpen, ClipboardCheck, ClipboardList, GraduationCap, Users, FileText, Sparkles, TrendingUp, Folder, ChevronDown, ChevronRight, Activity, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import AppShell from '../components/layout/AppShell';
@@ -413,6 +413,10 @@ function TeacherDashboard() {
                     <FileText className="w-4 h-4 inline-block mr-2" />
                     Manage Exams
                   </Link>
+                  <Link to="/teacher/assignments" className="btn-secondary btn-icon text-sm w-full sm:w-auto">
+                    <ClipboardList className="w-4 h-4 inline-block mr-2" />
+                    Assignments
+                  </Link>
                   <button onClick={loadTeacherDashboard} className="btn-secondary btn-icon text-sm w-full sm:w-auto">
                     Refresh Data
                   </button>
@@ -433,7 +437,7 @@ function TeacherDashboard() {
           <StatCard icon={Users} label="Students" value={stats.total_students} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           <motion.button
             type="button"
             onClick={() => navigate('/teacher/exams')}
@@ -450,6 +454,25 @@ function TeacherDashboard() {
             </div>
             <div className="mt-4 h-1 w-full rounded-full bg-surface overflow-hidden">
               <div className="h-full w-2/3 bg-gradient-to-r from-primary via-primary/70 to-primary/40" />
+            </div>
+          </motion.button>
+
+          <motion.button
+            type="button"
+            onClick={() => navigate('/teacher/assignments')}
+            whileHover={{ y: -4 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+            className="card-elevated text-left hover:border-primary/30 hover:bg-surface/30 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-text">Assignments</div>
+                <div className="text-xs text-text-secondary mt-1">Upload materials, create groups, bulk-assign</div>
+              </div>
+              <ClipboardList className="w-5 h-5 text-primary" />
+            </div>
+            <div className="mt-4 h-1 w-full rounded-full bg-surface overflow-hidden">
+              <div className="h-full w-2/5 bg-gradient-to-r from-primary via-primary/70 to-primary/40" />
             </div>
           </motion.button>
 

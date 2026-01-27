@@ -112,6 +112,13 @@ class ExamQuestion(models.Model):
 class Attempt(TimeStamped):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='exams_attempts')
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name='attempts')
+    assignment = models.ForeignKey(
+        'learning.LearningAssignment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='attempts',
+    )
     started_at = models.DateTimeField(default=timezone.now)
     finished_at = models.DateTimeField(null=True, blank=True)
     duration_seconds = models.PositiveIntegerField(default=0)
@@ -124,7 +131,11 @@ class Attempt(TimeStamped):
     
     class Meta:
         ordering = ['-started_at']
-        indexes = [models.Index(fields=['user', 'exam']), models.Index(fields=['status'])]
+        indexes = [
+            models.Index(fields=['user', 'exam']),
+            models.Index(fields=['status']),
+            models.Index(fields=['assignment']),
+        ]
     
     def calculate_score(self):
         """Calculate total score from responses"""

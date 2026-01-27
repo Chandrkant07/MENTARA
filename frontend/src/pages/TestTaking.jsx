@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import { 
@@ -57,7 +57,15 @@ const writeAttemptUi = (attemptId, data) => {
 const TestTaking = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+
+  const assignmentId = useMemo(() => {
+    const raw = searchParams.get('assignment') || searchParams.get('assignment_id');
+    if (!raw) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }, [searchParams]);
   
   const [loading, setLoading] = useState(true);
   const [exam, setExam] = useState(null);
@@ -280,7 +288,10 @@ const TestTaking = () => {
       // so refresh will not restart the timer or create duplicate attempts.
       let startRes;
       try {
-        startRes = await api.post(`exams/${examId}/start/`);
+        startRes = await api.post(
+          `exams/${examId}/start/`,
+          assignmentId ? { assignment_id: assignmentId } : undefined
+        );
       } catch (startErr) {
         // If student already attempted this exam, redirect to results.
         if (startErr?.response?.status === 409) {

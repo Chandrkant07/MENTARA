@@ -1,25 +1,19 @@
-# Mentara - Physics Test Platform
+# Mentara – Learning & Assessment Platform
 
-## ⚠️ CURRENT STATUS - BACKEND ONLY
+## ✅ Current Status (Full Stack)
 
-This project currently has:
-- ✅ **Django Backend Working** - API, database, admin panel
-- ✅ **Demo Data Loaded** - 13 users, 9 topics, 6 exams, 49 questions
-- ❌ **Frontend NOT Complete** - Only placeholder files exist
+This workspace includes:
+- ✅ Django backend (DRF) with auth, exams, attempts, admin controls
+- ✅ React frontend (Vite + Tailwind) with student/teacher/admin dashboards
+- ✅ Structured workflow support (uploads + teacher grading where applicable)
 
-### What's Actually Working:
-- Django Admin Panel at http://127.0.0.1:8000/admin
-- Backend API endpoints for exams, questions, users
-- Database with test data
+### Quick links
+- Backend admin: http://127.0.0.1:8000/admin
+- Frontend dev server: http://127.0.0.1:5173
 
-### What's Missing (from SRS):
-- Landing page (SRS Section 5: "Landing page: hero with short pitch...")
-- Login page for students/teachers (SRS FR-02)
-- Student Dashboard (SRS Section 5: "upcoming tests, quick-start CTA...")
-- Teacher Dashboard (SRS Section 5: "left nav vertical, content area...")
-- Test-taking interface (SRS FR-05)
-- Results/Analytics pages (SRS FR-10)
-- Leaderboard (SRS FR-09)
+### Teacher‑Guided Assignment System (New Requirement)
+Client requirement + implementation plan is documented here:
+- `docs/TEACHER_GUIDED_ASSIGNMENT_SYSTEM_PRODUCTION.md`
 
 ### Key Highlights
 - 🎨 **Apple-level UI**: Dark theme with gradient accents, micro-interactions
@@ -54,19 +48,33 @@ This project currently has:
 
 ---
 
-## 🚀 How to Run (Current State)
+## 🚀 How to Run (Local)
 
-### Start Backend Only
+### Option A: Quick start scripts
+- Windows: `quick-start.ps1`
+- Linux/macOS: `quick-start.sh`
 
+### Option B: Manual (Backend + Frontend)
+
+#### Backend
 ```powershell
-# Navigate to project folder
-cd C:\Users\dhiba\OneDrive\ALLDOCS\fr\fr\IB_Django\IB_Django
-
-# Run Django server
+python manage.py migrate
 python manage.py runserver
 ```
 
-**Access Admin Panel:** http://127.0.0.1:8000/admin
+#### Frontend
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+### Option C: Docker
+```powershell
+docker-compose -f docker-compose.yml up -d --build
+```
+
+**Admin Panel:** http://127.0.0.1:8000/admin
 
 **Login Credentials:**
 - Email: `admin@test.com`
@@ -86,16 +94,10 @@ python manage.py runserver
 
 ---
 
-## ⚠️ Frontend Status
+## 📌 Notes
 
-The `frontend/` folder has basic React files but **NOT the complete SRS features**:
-- ❌ No landing page
-- ❌ No login interface
-- ❌ No student/teacher dashboards
-- ❌ No test-taking UI
-- ❌ No analytics/leaderboard
-
-To see what data exists, **use the Django Admin Panel above**.
+- If you deploy on a free platform with ephemeral storage (e.g., free Render tier), uploaded media may disappear. For stable uploads use S3/R2/B2-style object storage.
+- For production setup guidance see `DEPLOYMENT.md`.
 
 ---
 
@@ -178,6 +180,7 @@ IB_Django/
 - **[Load Testing Guide](LOAD_TESTING.md)**: Performance testing with k6
 - **[Project Status](PROJECT_STATUS.md)**: Current progress and roadmap
 - **[API Documentation](docs/API.md)**: Endpoint reference (to be created)
+- **[Teacher‑Guided Assignment System](docs/TEACHER_GUIDED_ASSIGNMENT_SYSTEM_PRODUCTION.md)**: Client requirements + implementation plan
 
 ---
 
