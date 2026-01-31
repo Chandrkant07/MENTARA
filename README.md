@@ -1,4 +1,4 @@
-# Mentara – Learning & Assessment Platform ..
+# Mentara – Learning & Assessment Platform
 
 ## ✅ Current Status (Full Stack)
 
