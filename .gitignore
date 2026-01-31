@@ -91,3 +91,8 @@ ssl/
 __pycache__/
 *.pyc
 .cache/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

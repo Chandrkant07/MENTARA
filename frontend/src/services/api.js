@@ -33,7 +33,8 @@ const shouldRetryRequest = (error) => {
   return status === 502 || status === 503 || status === 504;
 };
 
-// Request interceptor to add auth token
+// Request interceptor to add 
+//  token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');

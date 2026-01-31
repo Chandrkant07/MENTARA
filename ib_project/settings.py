@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'replace-this-with-a-strong-secret-key')
 
 # Set DEBUG=False in production
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv("DEBUG", "false").strip().lower() in ("1", "true", "yes")
 
 # Add your domain or server IP in production
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -128,27 +128,27 @@ else:
         parsed = urlparse(database_url)
         DATABASES = {
             'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': (parsed.path or '').lstrip('/') or os.getenv('DB_NAME', 'mentara_db'),
-                'USER': parsed.username or os.getenv('DB_USER', 'postgres'),
-                'PASSWORD': parsed.password or os.getenv('DB_PASSWORD', 'postgres'),
-                'HOST': parsed.hostname or os.getenv('DB_HOST', 'localhost'),
-                'PORT': str(parsed.port or os.getenv('DB_PORT', '5432')),
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': (parsed.path or '').lstrip('/') or os.getenv('DB_NAME', 'mentara_dev'),
+                'USER': parsed.username or os.getenv('DB_USER', 'akash'),
+                'PASSWORD': parsed.password or os.getenv('DB_PASSWORD', 'aAmentara'),
+                'HOST': parsed.hostname or os.getenv('DB_HOST', ''),
+                'PORT': str(parsed.port or os.getenv('DB_PORT', '3306')),
                 'CONN_MAX_AGE': 600,
                 'OPTIONS': {
-                    'sslmode': os.getenv('DB_SSLMODE', 'require'),
+                    'charset': 'utf8mb4',
                 },
             }
         }
     else:
         DATABASES = {
             'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': os.getenv('DB_NAME', 'mentara_db'),
-                'USER': os.getenv('DB_USER', 'postgres'),
-                'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
-                'HOST': os.getenv('DB_HOST', 'localhost'),
-                'PORT': os.getenv('DB_PORT', '5432'),
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': os.getenv('DB_NAME', 'mentara_dev'),
+                'USER': os.getenv('DB_USER', 'akash'),
+                'PASSWORD': os.getenv('DB_PASSWORD', 'aAmentara'),
+                'HOST': os.getenv('DB_HOST', ''),
+                'PORT': os.getenv('DB_PORT', '3306'),
                 'CONN_MAX_AGE': 600,
             }
         }
@@ -315,7 +315,7 @@ if not DEBUG:
     # If you're temporarily serving over plain HTTP (not recommended), override via env.
     SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'True') == 'True'
     CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'True') == 'True'
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
 
     SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
