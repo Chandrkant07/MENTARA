@@ -351,7 +351,7 @@ const Dashboard = () => {
           <div className="student-dashboard-header">
             <div className="min-w-0">
               <div className="student-dashboard-subtitle">Hello {firstName}, Welcome back 👋</div>
-              <div className="student-dashboard-title">Your Dashboard today</div>
+              <div className="student-dashboard-title">Your Student Dashboard</div>
             </div>
             <div className="student-dashboard-topActions">
               <button type="button" className="btn-secondary btn-icon" aria-label="Notifications" title="Notifications">
